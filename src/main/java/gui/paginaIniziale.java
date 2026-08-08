@@ -28,17 +28,37 @@ public class paginaIniziale extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
+        bottoneLogin = new javax.swing.JButton();
+        bottoneRegistazione = new javax.swing.JButton();
+        labelGuest = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jButton1.setText("Login");
+        bottoneLogin.setText("Login");
+        bottoneLogin.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                bottoneLoginMouseEntered(evt);
+            }
+        });
+        bottoneLogin.addActionListener(this::bottoneLoginActionPerformed);
 
-        jButton2.setText("Registrazione");
+        bottoneRegistazione.setText("Registrazione");
+        bottoneRegistazione.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                bottoneRegistazioneMouseEntered(evt);
+            }
+        });
+        bottoneRegistazione.addActionListener(this::bottoneRegistazioneActionPerformed);
 
-        jLabel1.setText("continua come Guest");
+        labelGuest.setText("continua come Guest");
+        labelGuest.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                labelGuestMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                labelGuestMouseEntered(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -47,31 +67,54 @@ public class paginaIniziale extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(146, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(bottoneRegistazione, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(bottoneLogin, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(labelGuest, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(134, 134, 134))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(185, 185, 185)
-                .addComponent(jButton1)
+                .addComponent(bottoneLogin)
                 .addGap(18, 18, 18)
-                .addComponent(jButton2)
+                .addComponent(bottoneRegistazione)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel1)
+                .addComponent(labelGuest)
                 .addContainerGap(217, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    
-    
+    private void labelGuestMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_labelGuestMouseEntered
+        labelGuest.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_labelGuestMouseEntered
+
+    private void labelGuestMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_labelGuestMouseClicked
+        //RICHIEDERE IL DOMICILIO O LUOGO E POI MANDARLO ALLA HOMEPAGE
+    }//GEN-LAST:event_labelGuestMouseClicked
+
+    private void bottoneLoginMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_bottoneLoginMouseEntered
+        bottoneLogin.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR) {});
+    }//GEN-LAST:event_bottoneLoginMouseEntered
+
+    private void bottoneLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bottoneLoginActionPerformed
+        //APRIRE IL JDIALOG PER IL LOGIN
+    }//GEN-LAST:event_bottoneLoginActionPerformed
+
+    private void bottoneRegistazioneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bottoneRegistazioneActionPerformed
+        // APRIRE IL JDIALOG PER LA REGISTRAZIONE
+    }//GEN-LAST:event_bottoneRegistazioneActionPerformed
+
+    private void bottoneRegistazioneMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_bottoneRegistazioneMouseEntered
+        bottoneRegistazione.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR) {});
+    }//GEN-LAST:event_bottoneRegistazioneMouseEntered
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JButton bottoneLogin;
+    private javax.swing.JButton bottoneRegistazione;
+    private javax.swing.JLabel labelGuest;
     // End of variables declaration//GEN-END:variables
 }
