@@ -4,26 +4,62 @@
  */
 package com.mycompany.theknife;
 
-import gui.paginaIniziale;
-import java.io.IOException;
-import java.net.Socket;
+import gui.Home;
 import javax.swing.SwingUtilities;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 
 /**
- *
- * @author Balkaran
+ * Punto di ingresso principale per il Client e gestore della comunicazione di rete.
  */
 public class clientTK {
 
-    public static void main(String[] args) {
-        try (Socket s = new Socket("localhost", 5000)) {
-            SwingUtilities.invokeLater(() -> {
-                new paginaIniziale().setVisible(true);
-            });
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            System.out.println("Connessione non riuscita al server");
-        }
+    // Parametri di connessione al Server centralizzati
+    private static final String SERVER_IP = "localhost";
+    private static final int SERVER_PORT = 5000;
 
+    /**
+     * Metodo main: avvia l'interfaccia grafica iniziale.
+     */
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            new Home().setVisible(true);
+        });
+    }
+
+    /**
+     * Apre un Socket, invia una richiesta al server e attende la risposta.
+     * Questo metodo può essere usato da qualsiasi finestra della GUI.
+     *
+     * @param richiesta L'oggetto da inviare (es. l'oggetto Utente o l'array "LOGIN")
+     * @return La risposta del server (di solito "OK:..." o "ERRORE:...")
+     */
+    public static String inviaRichiesta(Object richiesta) {
+        try (Socket socket = new Socket(SERVER_IP, SERVER_PORT);
+             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
+
+            // Inizializza il flusso di output
+            out.flush();
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+
+            // 1. Invia la richiesta al server
+            out.writeObject(richiesta);
+            out.flush();
+
+            // 2. Legge la risposta del Server
+            Object risposta = in.readObject();
+
+            // 3. Restituisce la risposta alla GUI
+            if (risposta instanceof String) {
+                return (String) risposta;
+            } else {
+                return "ERRORE: Risposta del server non riconosciuta.";
+            }
+
+        } catch (Exception e) {
+            System.err.println("[CLIENT] Errore di rete: " + e.getMessage());
+            return "ERRORE: Impossibile connettersi al Server. Assicurati che serverTK sia avviato.";
+        }
     }
 }
