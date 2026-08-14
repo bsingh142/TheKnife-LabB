@@ -63,6 +63,11 @@ public class serverSlave extends Thread {
                     case "LOGIN":
                         gestisciLogin(pacchetto);
                         break;
+                    case "RISTORANTI":
+                        break;
+                    case "POSIZIONE":
+                        gestisciPosizione(pacchetto);
+                        break;
 
                     // Qui in futuro potrai aggiungere case "PRENOTA", case "RECENSISCI", ecc.
 
@@ -109,6 +114,17 @@ public class serverSlave extends Thread {
         String risposta = GestoreDatabase.verificaLogin(username, password, urlDB, userDB, passDB);
 
         output.writeObject(risposta);
+        output.flush();
+    }
+
+    private void gestisciRistoranti(){
+
+    }
+
+    private void gestisciPosizione(String[] pacchetto) throws IOException {
+        String risp=GestoreDatabase.ricercaPosizione(pacchetto[1],pacchetto[2]);
+
+        output.writeObject(risp);
         output.flush();
     }
 

@@ -78,6 +78,7 @@ public class Home extends JFrame {
                 "Accesso Ospite",
                 JOptionPane.INFORMATION_MESSAGE
         );
+        new richiestaPosGuest(Home.this).setVisible(true);
         this.dispose();
     }
 

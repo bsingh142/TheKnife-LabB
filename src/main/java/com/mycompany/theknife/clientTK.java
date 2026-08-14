@@ -53,7 +53,7 @@ public class clientTK {
             // 3. Restituisce la risposta alla GUI
             if (risposta instanceof String) {
                 return (String) risposta;
-            } else {
+            }else{
                 return "ERRORE: Risposta del server non riconosciuta.";
             }
 

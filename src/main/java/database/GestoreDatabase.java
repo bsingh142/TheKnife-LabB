@@ -1,12 +1,23 @@
 package database;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import modelli.Ristorante;
 import modelli.Utente;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 /**
  * Classe ausiliaria per la gestione delle operazioni sul Database.
@@ -87,5 +98,49 @@ public class GestoreDatabase {
 
     private static String hashPassword(String passwordInChiaro) {
         return BCrypt.hashpw(passwordInChiaro, BCrypt.gensalt());
+    }
+
+    public static String ricercaPosizione(String citta,String nazione){
+        try {
+            String url="https://nominatim.openstreetmap.org/search"
+                    +"?city="+ URLEncoder.encode(citta, StandardCharsets.UTF_8)
+                    +"&country="+URLEncoder.encode(nazione,StandardCharsets.UTF_8)
+                    +"&format=jsonv2"
+                    +"&limit=1";
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("User-Agent", "TheKnife/1.0")
+                    .GET()
+                    .build();
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<String> response =
+                    client.send(
+                            request,
+                            HttpResponse.BodyHandlers.ofString()
+                    );
+            System.out.println("STATUS:" + response.statusCode());
+            System.out.println(response.body());
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode risultati=mapper.readTree(response.body());
+            if(risultati.isEmpty()) {
+                return null;
+            }
+
+            double latitudine=risultati.get(0).get("lat").asDouble();
+            double longitudine=risultati.get(0).get("lon").asDouble();
+            return latitudine+"/"+longitudine;
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+    public static List<Ristorante> ricercaRistoranti(){
+
+        return null;
     }
 }
