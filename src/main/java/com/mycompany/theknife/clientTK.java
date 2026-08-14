@@ -5,10 +5,13 @@
 package com.mycompany.theknife;
 
 import gui.Home;
+import modelli.Ristorante;
+
 import javax.swing.SwingUtilities;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.List;
 
 /**
  * Punto di ingresso principale per il Client e gestore della comunicazione di rete.
@@ -35,7 +38,7 @@ public class clientTK {
      * @param richiesta L'oggetto da inviare (es. l'oggetto Utente o l'array "LOGIN")
      * @return La risposta del server (di solito "OK:..." o "ERRORE:...")
      */
-    public static String inviaRichiesta(Object richiesta) {
+    /*public static String inviaRichiesta(Object richiesta) {
         try (Socket socket = new Socket(SERVER_IP, SERVER_PORT);
              ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
 
@@ -60,6 +63,31 @@ public class clientTK {
         } catch (Exception e) {
             System.err.println("[CLIENT] Errore di rete: " + e.getMessage());
             return "ERRORE: Impossibile connettersi al Server. Assicurati che serverTK sia avviato.";
+        }
+    }*/
+
+    public static <T> T inviaRichiesta(Object richiesta) {
+        try (Socket socket = new Socket(SERVER_IP, SERVER_PORT);
+             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
+
+            // Inizializza il flusso di output
+            out.flush();
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+
+            // 1. Invia la richiesta al server
+            out.writeObject(richiesta);
+            out.flush();
+
+            // 2. Legge la risposta del Server
+            Object risposta = in.readObject();
+
+            // 3. Restituisce la risposta alla GUI
+            T risultato=(T) risposta;
+            return risultato;
+
+        } catch (Exception e) {
+            System.err.println("[CLIENT] Errore di rete: " + e.getMessage());
+            return null;
         }
     }
 }

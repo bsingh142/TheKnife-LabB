@@ -1,12 +1,14 @@
 package com.mycompany.theknife;
 
 import database.GestoreDatabase; // Assicurati che il package sia corretto!
+import modelli.Ristorante;
 import modelli.Utente;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.List;
 
 /**
  * Gestore multithread per la singola connessione client.
@@ -64,6 +66,7 @@ public class serverSlave extends Thread {
                         gestisciLogin(pacchetto);
                         break;
                     case "RISTORANTI":
+                        gestisciRistoranti(pacchetto[1]);
                         break;
                     case "POSIZIONE":
                         gestisciPosizione(pacchetto);
@@ -117,8 +120,11 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
-    private void gestisciRistoranti(){
+    private void gestisciRistoranti(String richiesta) throws IOException {
+        List<Ristorante> risultati=GestoreDatabase.ricercaRistoranti(richiesta, urlDB,userDB,passDB);
 
+        output.writeObject(risultati);
+        output.flush();
     }
 
     private void gestisciPosizione(String[] pacchetto) throws IOException {

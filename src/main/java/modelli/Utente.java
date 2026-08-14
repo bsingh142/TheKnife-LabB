@@ -15,20 +15,22 @@ public class Utente implements Serializable {
     private String username;
     private String pwd; // Password
     private String dob; // Data di nascita (Date of birth)
-    private String domicilio;
+    private Double latitudine;
+    private Double longitudine;
     private String ruolo; // Deve essere "Cliente" o "Ristoratore"
 
     /**
      * Costruttore completo: utilizzato per creare un nuovo oggetto Utente
      * fornendo tutti i dati in un colpo solo.
      */
-    public Utente(String nome, String cognome, String username, String pwd, String dob, String domicilio, String ruolo) {
+    public Utente(String nome, String cognome, String username, String pwd, String dob, Double lat,Double lon, String ruolo) {
         this.nome = nome;
         this.cognome = cognome;
         this.username = username;
         this.pwd = pwd;
         this.dob = dob;
-        this.domicilio = domicilio;
+        this.latitudine=lat;
+        this.longitudine=lon;
         this.ruolo = ruolo;
     }
 
@@ -44,7 +46,8 @@ public class Utente implements Serializable {
     public String getUsername() { return username; }
     public String getPwd() { return pwd; }
     public String getDob() { return dob; }
-    public String getDomicilio() { return domicilio; }
+    public Double getLatitudine() {return latitudine;}
+    public Double getLongitudine() {return longitudine;}
     public String getRuolo() { return ruolo; }
 
     // Metodi Setter (permettono di modificare i dati)
@@ -53,6 +56,7 @@ public class Utente implements Serializable {
     public void setUsername(String username) { this.username = username; }
     public void setPwd(String pwd) { this.pwd = pwd; }
     public void setDob(String dob) { this.dob = dob; }
-    public void setDomicilio(String domicilio) { this.domicilio = domicilio; }
+    public void setLatitudine(Double latitudine) { this.latitudine = latitudine; }
+    public void setLongitudine(Double longitudine) { this.longitudine = longitudine; }
     public void setRuolo(String ruolo) { this.ruolo = ruolo; }
 }

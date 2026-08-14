@@ -17,6 +17,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,7 +29,7 @@ public class GestoreDatabase {
      * Esegue la query di inserimento. Ora restituisce una Stringa con l'esito preciso.
      */
     public static String registraUtente(Utente u, String urlDB, String userDB, String passDB) {
-        String query = "INSERT INTO utenti (nome, cognome, username, pwd, dob, domicilio, ruolo) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO utenti (nome, cognome, username, pwd, dob, latitudine,longitudine, ruolo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -51,8 +52,9 @@ public class GestoreDatabase {
                 }
             }
 
-            pstmt.setString(6, u.getDomicilio());
-            pstmt.setString(7, u.getRuolo());
+            pstmt.setDouble(6, u.getLatitudine());
+            pstmt.setDouble(7, u.getLongitudine());
+            pstmt.setString(8, u.getRuolo());
 
             pstmt.executeUpdate();
             return "OK: Registrazione completata con successo!";
@@ -72,7 +74,7 @@ public class GestoreDatabase {
      * Verifica il login e restituisce un testo con l'esito specifico.
      */
     public static String verificaLogin(String username, String passwordInChiaro, String urlDB, String userDB, String passDB) {
-        String query = "SELECT pwd FROM utenti WHERE username = ?";
+        String query = "SELECT pwd,latitudine,longitudine FROM utenti WHERE username = ?";
 
         try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -83,7 +85,7 @@ public class GestoreDatabase {
             if (rs.next()) {
                 String hashSalvato = rs.getString("pwd");
                 if (BCrypt.checkpw(passwordInChiaro, hashSalvato)) {
-                    return "OK: Login effettuato con successo!";
+                    return "OK: Login effettuato con successo!" + rs.getDouble("latitudine")+"/"+rs.getDouble("longitudine");
                 } else {
                     return "ERRORE: La password inserita non è corretta.";
                 }
@@ -120,8 +122,7 @@ public class GestoreDatabase {
                             request,
                             HttpResponse.BodyHandlers.ofString()
                     );
-            System.out.println("STATUS:" + response.statusCode());
-            System.out.println(response.body());
+
             ObjectMapper mapper = new ObjectMapper();
             JsonNode risultati=mapper.readTree(response.body());
             if(risultati.isEmpty()) {
@@ -139,8 +140,42 @@ public class GestoreDatabase {
         }
 
     }
-    public static List<Ristorante> ricercaRistoranti(){
 
-        return null;
+    public static List<Ristorante> ricercaRistoranti(String richiesta, String urlDB, String userDB, String passDB){
+        List<Ristorante> risultati=new ArrayList<>();
+        if(richiesta.equalsIgnoreCase("TUTTI")){
+            String query="SELECT * FROM ristorantitheknife";
+
+            try(Connection conn=DriverManager.getConnection(urlDB,userDB,passDB);
+                PreparedStatement pstmt=conn.prepareStatement(query)){
+
+                ResultSet rs=pstmt.executeQuery();
+
+                while(rs.next()){
+                    Ristorante r=new Ristorante(
+                            rs.getInt("id"),
+                            rs.getString("nome"),
+                            rs.getString("indirizzo"),
+                            rs.getString("citta"),
+                            rs.getString("nazione"),
+                            rs.getDouble("latitudine"),
+                            rs.getDouble("longitudine"),
+                            rs.getString("fascia_prezzo"),
+                            rs.getBoolean("delivery"),
+                            rs.getBoolean("prenotazione_online"),
+                            rs.getString("tipo_cucina"),
+                            rs.getString("proprietario"));
+
+                    risultati.add(r);
+                }
+            }catch (SQLException e) {
+                System.err.println("[DB] Errore SQL durante il login: " + e.getMessage());
+                return null;
+            }
+        }else{
+            //
+        }
+
+        return risultati;
     }
 }

@@ -100,6 +100,7 @@ public class Login extends JFrame {
                     "Login Completato",
                     JOptionPane.INFORMATION_MESSAGE
             );
+            new homePageU(username,messaggioServer.substring(messaggioServer.indexOf("!")+1)).setVisible(true);
             this.dispose(); // Chiude la finestra di login al successo
 
         } else {

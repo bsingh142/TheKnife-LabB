@@ -71,13 +71,6 @@ public class Home extends JFrame {
      * Metodo per gestire l'accesso limitato come ospite.
      */
     private void continuaComeOspite() {
-        // Per ora mostriamo un messaggio, in futuro aprirà la GUI principale limitata
-        JOptionPane.showMessageDialog(
-                this,
-                "Stai accedendo come ospite.\nAlcune funzionalità potrebbero essere limitate.",
-                "Accesso Ospite",
-                JOptionPane.INFORMATION_MESSAGE
-        );
         new richiestaPosGuest(Home.this).setVisible(true);
         this.dispose();
     }

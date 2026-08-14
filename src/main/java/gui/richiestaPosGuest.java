@@ -15,16 +15,44 @@ public class richiestaPosGuest extends JDialog{
         super(padre,"Inserisci posizione",true);
         setContentPane(mainPanel);
 
-        invioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String[] richiesta={"POSIZIONE",nomeCitta.getText(),nomeNazione.getText()};
-                String rispServer=clientTK.inviaRichiesta(richiesta);
-                System.out.println(rispServer);
-            }
-        });
+        if(invioButton!=null){
+            invioButton.addActionListener(e->apriHomePageU());
+        }
 
         pack();
         setLocationRelativeTo(padre);
     }
+
+    private void apriHomePageU(){
+        String citta=nomeCitta.getText();
+        String nazione=nomeNazione.getText();
+
+        if (citta.isEmpty() || nazione.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Inserire sia la città che la nazione.",
+                    "Attenzione: Dati Mancanti",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+        String[] richiesta={"POSIZIONE",citta,nazione};
+        String rispServer=clientTK.inviaRichiesta(richiesta);
+        System.out.println("[DEBUG] COORDINATE RICEVUTE: " + rispServer);
+        JOptionPane.showMessageDialog(
+                this,
+                "Stai accedendo come ospite.\nAlcune funzionalità potrebbero essere limitate.",
+                "Accesso Ospite",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+        if(rispServer.startsWith("ERRORE:")){
+            //DOMICILIO NON RICONOSCIUTO
+            new homePageU(null,null).setVisible(true);
+        }else{
+            new homePageU(null,rispServer).setVisible(true);
+        }
+        this.dispose();
+    }
 }
+
+

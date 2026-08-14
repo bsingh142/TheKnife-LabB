@@ -7,7 +7,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
+
 import com.mycompany.theknife.clientTK;
+import modelli.Ristorante;
 
 public class homePageU extends JFrame{
 
@@ -15,39 +18,54 @@ public class homePageU extends JFrame{
     private JLabel labelUsername;
     private JTable tabellaRistoranti;
     private JButton bottoneFiltri;
+    private String posizioneUtente; //La stringa è salvata come latitudine/longitudine
 
-    public homePageU(){
+    public homePageU(String nomeUtente,String pos){
         if (mainPanel == null) {
             throw new IllegalStateException("Il mainPanel non è stato associato correttamente nel file homePageU.form");
         }
 
+        this.posizioneUtente=pos;
         setContentPane(mainPanel);
 
-        String[] colonne={"Nome","Indirizzo","Città","Nazione","Latitudine","Longitudine","Fascia prezzo","Delivery","Prenotazioni Online","Tipo di cucina"};
-        tabellaRistoranti.setModel(new DefaultTableModel(colonne,0));
-
-        labelUsername.addMouseListener(new MouseAdapter() {
+        String[] colonne={"Id Ristorante","Nome","Indirizzo","Città","Nazione","Latitudine","Longitudine","Fascia prezzo","Delivery","Prenotazioni Online","Tipo di cucina"};
+        tabellaRistoranti.setModel(new DefaultTableModel(colonne,0){
             @Override
-            public void mouseEntered(MouseEvent e) {
-                labelUsername.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            public boolean isCellEditable(int row, int column) {
+                return false;
             }
         });
+        tabellaRistoranti.getTableHeader().setReorderingAllowed(false);
+        tabellaRistoranti.getTableHeader().setResizingAllowed(false);
 
-        labelUsername.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseExited(MouseEvent e) {
-                labelUsername.setCursor(new Cursor(Cursor.getDefaultCursor().getType()));
-            }
-        });
+        riempiTabella(tabellaRistoranti);
 
-        JPopupMenu menuTendina=creaMenu();
+        if(nomeUtente==null){
+            labelUsername.setVisible(false);
+        }else{
+            labelUsername.setText(nomeUtente);
+            labelUsername.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    labelUsername.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                }
+            });
 
-        labelUsername.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                menuTendina.show(labelUsername,0,labelUsername.getHeight());
-            }
-        });
+            labelUsername.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    labelUsername.setCursor(new Cursor(Cursor.getDefaultCursor().getType()));
+                }
+            });
+
+            JPopupMenu menuTendina=creaMenu();
+            labelUsername.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    menuTendina.show(labelUsername,0,labelUsername.getHeight());
+                }
+            });
+        }
 
         bottoneFiltri.addActionListener(new ActionListener() {
             @Override
@@ -58,13 +76,6 @@ public class homePageU extends JFrame{
 
         pack();
         setLocationRelativeTo(null);
-    }
-
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new homePageU().setVisible(true);
-        });
     }
 
     public static JPopupMenu creaMenu(){
@@ -89,9 +100,29 @@ public class homePageU extends JFrame{
         return menuTendina;
     }
 
-    public static void selezioneRistoranti(){
-        String[] richiesta={"RISTORANTI"};
-        String rispServer= clientTK.inviaRichiesta(richiesta);
+    public static void riempiTabella(JTable table){
+        DefaultTableModel dtm=(DefaultTableModel) table.getModel();
+        dtm.setRowCount(0);
+
+        String[] richiesta={"RISTORANTI","TUTTI"};
+        List<Ristorante> ristoranti=clientTK.inviaRichiesta(richiesta);
+
+        for(Ristorante r:ristoranti){
+            dtm.addRow(new Object[]{
+                    r.getId(),
+                    r.getNome(),
+                    r.getIndirizzo(),
+                    r.getCitta(),
+                    r.getNazione(),
+                    r.getLatitudine(),
+                    r.getLongitudine(),
+                    r.getFasciaPrezzo(),
+                    r.isDelivery(),
+                    r.isPrenotazioneOnline(),
+                    r.getTipoCucina()
+            });
+        }
+
     }
 
 }

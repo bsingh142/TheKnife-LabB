@@ -24,9 +24,10 @@ public class Registrazione extends JFrame {
     private JTextField txtUsername;
     private JPasswordField txtPw;
     private JTextField txtBd;
-    private JTextField txtDomicilio;
+    private JTextField txtDomicilioC;
     private JComboBox<String> comboRuolo;
     private JButton annullaButton;
+    private JTextField txtDomicilioN;
 
     public Registrazione() {
         if (mainPanel == null) {
@@ -81,7 +82,8 @@ public class Registrazione extends JFrame {
         txtUsername.setText("");
         txtPw.setText("");
         txtBd.setText("");
-        txtDomicilio.setText("");
+        txtDomicilioC.setText("");
+        txtDomicilioN.setText("");
         if (comboRuolo != null && comboRuolo.getItemCount() > 0) {
             comboRuolo.setSelectedIndex(0);
         }
@@ -94,14 +96,15 @@ public class Registrazione extends JFrame {
         String username = txtUsername.getText().trim();
         String password = new String(txtPw.getPassword()).trim();
         String dob = txtBd.getText().trim();
-        String domicilio = txtDomicilio.getText().trim();
+        String domicilioC = txtDomicilioC.getText().trim();
+        String domicilioN = txtDomicilioN.getText().trim();
         String ruolo = (String) comboRuolo.getSelectedItem();
 
         // 2. CONTROLLI FRONT-END (Validazione)
 
         // Controllo 2.1: Campi obbligatori
         if (nome.isEmpty() || cognome.isEmpty() || username.isEmpty() ||
-                password.isEmpty() || domicilio.isEmpty() || ruolo == null) {
+                password.isEmpty() || domicilioC.isEmpty() || domicilioN.isEmpty() || ruolo == null) {
             JOptionPane.showMessageDialog(this, "Compilare tutti i campi obbligatori.", "Attenzione", JOptionPane.WARNING_MESSAGE);
             return; // Blocca l'esecuzione
         }
@@ -124,16 +127,28 @@ public class Registrazione extends JFrame {
             return;
         }
 
-        // 3. Creazione del pacchetto Utente
-        Utente nuovoUtente = new Utente(nome, cognome, username, password, dob, domicilio, ruolo);
+        //3. Controllo del domicilio inserito dall'utent
+        String[] richiesta = {"POSIZIONE",domicilioC,domicilioN};
+        String rispServer = clientTK.inviaRichiesta(richiesta);
+        if(rispServer.startsWith("ERRORE:")){
+            JOptionPane.showMessageDialog(this,"Attenzione: Il domicilio non è valido","Domicilio non valido",JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        String[] tmp=rispServer.split("/");
+        Double latitudine= Double.valueOf(tmp[0]);
+        Double longitudine=Double.valueOf(tmp[1]);
+        // 4. Creazione del pacchetto Utente
+        Utente nuovoUtente = new Utente(nome, cognome, username, password, dob, latitudine,longitudine, ruolo);
 
-        // 4. INVIO AL SERVER TRAMITE IL GESTORE CENTRALIZZATO
+        // 5. INVIO AL SERVER TRAMITE IL GESTORE CENTRALIZZATO
         String messaggioServer = clientTK.inviaRichiesta(nuovoUtente);
 
-        // 5. Gestione della risposta
+        // 6. Gestione della risposta
         if (messaggioServer.startsWith("OK")) {
             JOptionPane.showMessageDialog(this, messaggioServer, "Esito Registrazione", JOptionPane.INFORMATION_MESSAGE);
             svuotaInterfaccia(); // Pulisce i campi in automatico
+            new homePageU(username,rispServer).setVisible(true);
+            this.dispose();
         } else {
             // Mostra l'errore (ad esempio se lo username esiste già, errore generato dal database!)
             JOptionPane.showMessageDialog(this, messaggioServer, "Avviso Server", JOptionPane.ERROR_MESSAGE);
