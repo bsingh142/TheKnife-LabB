@@ -14,5 +14,3 @@ Dopo averlo creato fate tasto destro sul database e cliccate restore
 4)
 Selezionate il file TheKnife.backup che vi ho dato e cliccate sul bottone restore
 
-5)
-Nella tabella Utenti cambiate la lunghezza della colonna password in 60 e lasciate character varying come tipo
