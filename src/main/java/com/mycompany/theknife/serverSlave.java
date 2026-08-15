@@ -66,10 +66,17 @@ public class serverSlave extends Thread {
                         gestisciLogin(pacchetto);
                         break;
                     case "RISTORANTI":
-                        gestisciRistoranti(pacchetto[1]);
+                        if(pacchetto.length==2){
+                            gestisciRistoranti(pacchetto[1],null);
+                        }else{
+                            gestisciRistoranti(pacchetto[1],pacchetto[2]);
+                        }
                         break;
                     case "POSIZIONE":
                         gestisciPosizione(pacchetto);
+                        break;
+                    case "TIPI_CUCINA":
+                        gestisciTipiCucina();
                         break;
 
                     // Qui in futuro potrai aggiungere case "PRENOTA", case "RECENSISCI", ecc.
@@ -120,8 +127,8 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
-    private void gestisciRistoranti(String richiesta) throws IOException {
-        List<Ristorante> risultati=GestoreDatabase.ricercaRistoranti(richiesta, urlDB,userDB,passDB);
+    private void gestisciRistoranti(String richiesta,String posU) throws IOException {
+        List<Ristorante> risultati=GestoreDatabase.ricercaRistoranti(richiesta,posU, urlDB,userDB,passDB);
 
         output.writeObject(risultati);
         output.flush();
@@ -131,6 +138,13 @@ public class serverSlave extends Thread {
         String risp=GestoreDatabase.ricercaPosizione(pacchetto[1],pacchetto[2]);
 
         output.writeObject(risp);
+        output.flush();
+    }
+
+    private void gestisciTipiCucina() throws IOException {
+        List<String> ris=GestoreDatabase.ricercaTipiCucina(urlDB,userDB,passDB);
+
+        output.writeObject(ris);
         output.flush();
     }
 

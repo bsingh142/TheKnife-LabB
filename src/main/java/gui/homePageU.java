@@ -38,7 +38,7 @@ public class homePageU extends JFrame{
         tabellaRistoranti.getTableHeader().setReorderingAllowed(false);
         tabellaRistoranti.getTableHeader().setResizingAllowed(false);
 
-        riempiTabella(tabellaRistoranti);
+        riempiTabella(tabellaRistoranti,new String[]{"RISTORANTI","TUTTI"});
 
         if(nomeUtente==null){
             labelUsername.setVisible(false);
@@ -70,7 +70,13 @@ public class homePageU extends JFrame{
         bottoneFiltri.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new dialogFiltri(homePageU.this).setVisible(true);
+                dialogFiltri dF=new dialogFiltri(homePageU.this,posizioneUtente);
+                dF.setVisible(true);
+
+                List<Ristorante> listaR=dF.getRistorantiFiltrati();
+                if(listaR!=null){
+                    applicaFiltri(tabellaRistoranti,listaR);
+                }
             }
         });
 
@@ -100,11 +106,11 @@ public class homePageU extends JFrame{
         return menuTendina;
     }
 
-    public static void riempiTabella(JTable table){
+    public static void riempiTabella(JTable table,String[] richiesta){
         DefaultTableModel dtm=(DefaultTableModel) table.getModel();
         dtm.setRowCount(0);
 
-        String[] richiesta={"RISTORANTI","TUTTI"};
+        //String[] richiesta={"RISTORANTI","TUTTI"};
         List<Ristorante> ristoranti=clientTK.inviaRichiesta(richiesta);
 
         for(Ristorante r:ristoranti){
@@ -123,6 +129,27 @@ public class homePageU extends JFrame{
             });
         }
 
+    }
+
+    public static void applicaFiltri(JTable table,List<Ristorante> ristoranti){
+        DefaultTableModel dtm=(DefaultTableModel) table.getModel();
+        dtm.setRowCount(0);
+
+        for(Ristorante r:ristoranti){
+            dtm.addRow(new Object[]{
+                    r.getId(),
+                    r.getNome(),
+                    r.getIndirizzo(),
+                    r.getCitta(),
+                    r.getNazione(),
+                    r.getLatitudine(),
+                    r.getLongitudine(),
+                    r.getFasciaPrezzo(),
+                    r.isDelivery(),
+                    r.isPrenotazioneOnline(),
+                    r.getTipoCucina()
+            });
+        }
     }
 
 }

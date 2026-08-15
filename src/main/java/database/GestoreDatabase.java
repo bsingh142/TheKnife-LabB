@@ -141,7 +141,7 @@ public class GestoreDatabase {
 
     }
 
-    public static List<Ristorante> ricercaRistoranti(String richiesta, String urlDB, String userDB, String passDB){
+    public static List<Ristorante> ricercaRistoranti(String richiesta, String posUtente, String urlDB, String userDB, String passDB){
         List<Ristorante> risultati=new ArrayList<>();
         if(richiesta.equalsIgnoreCase("TUTTI")){
             String query="SELECT * FROM ristorantitheknife";
@@ -173,9 +173,125 @@ public class GestoreDatabase {
                 return null;
             }
         }else{
-            //
+            String[] tmp=richiesta.split("=");
+            String[] distanze=tmp[0].split("/"); //Il formato è DistanzaScelta(5 o 10 o 20 o 50 o Qualsiasi)/latitudine/longitudine
+            String[] prezzi=tmp[1].split("/"); //Il formato è prezzoMin/prezzoMax
+
+            StringBuilder query=new StringBuilder("""
+                SELECT r.*
+                FROM ristorantitheknife as r
+                WHERE 1 = 1
+                """);
+
+            List<Object> parametri = new ArrayList<>();
+
+            query.append(" AND fascia_prezzo >= ?");
+            parametri.add(Integer.parseInt(prezzi[0]));
+            query.append(" AND fascia_prezzo <= ?");
+            parametri.add(Integer.parseInt(prezzi[1]));
+
+            if(!tmp[2].equals("Qualsiasi")){
+                query.append("""
+                     AND EXISTS (
+                        SELECT 1
+                        FROM unnest(string_to_array(r.tipo_cucina, ',')) AS x(tipo)
+                        WHERE TRIM(x.tipo) = ?
+                    )
+                    """);
+                parametri.add(tmp[2]);
+            }
+            if(tmp[3].equals("true")){
+                query.append(" AND r.delivery = TRUE");
+            }else if(tmp[3].equals("false")){
+                query.append(" AND r.delivery = FALSE");
+            }
+            if(tmp[4].equals("true")){
+                query.append(" AND r.prenotazione_online = TRUE");
+            }else if(tmp[4].equals("false")){
+                query.append(" AND r.prenotazione_online = FALSE");
+            }
+
+            //AGGIUNGERE IL CONTROLLO PER LA MEDIA DELLE STELLE DELLE RECENSIONI
+
+            if(!distanze[0].equals("Qualsiasi")){
+                query.append("""
+                     AND ST_DistanceSphere(
+                    ST_MakePoint(r.longitudine, r.latitudine),
+                    ST_MakePoint(?, ?)
+                    ) <= ?
+                    """);
+
+                parametri.add(Double.parseDouble(distanze[2]));
+                parametri.add(Double.parseDouble(distanze[1]));
+                parametri.add(Integer.parseInt(distanze[0]) * 1000);
+
+                query.append("""
+                    ORDER BY ST_DistanceSphere(
+                    ST_MakePoint(r.longitudine, r.latitudine),
+                    ST_MakePoint(?, ?)
+                    ) ASC
+                 """);
+
+                parametri.add(Double.parseDouble(distanze[2]));
+                parametri.add(Double.parseDouble(distanze[1]));
+            }
+
+            System.out.println(query);
+            try(Connection conn=DriverManager.getConnection(urlDB,userDB,passDB);
+                PreparedStatement ps=conn.prepareStatement(query.toString())){
+
+                for (int i = 0; i < parametri.size(); i++) {
+                    ps.setObject(i+1,parametri.get(i));
+                }
+
+                try(ResultSet rs=ps.executeQuery()){
+                    while(rs.next()){
+                        Ristorante r=new Ristorante(
+                                rs.getInt("id"),
+                                rs.getString("nome"),
+                                rs.getString("indirizzo"),
+                                rs.getString("citta"),
+                                rs.getString("nazione"),
+                                rs.getDouble("latitudine"),
+                                rs.getDouble("longitudine"),
+                                rs.getString("fascia_prezzo"),
+                                rs.getBoolean("delivery"),
+                                rs.getBoolean("prenotazione_online"),
+                                rs.getString("tipo_cucina"),
+                                rs.getString("proprietario"));
+
+                        risultati.add(r);
+                    }
+                }
+            }catch (SQLException e) {
+                System.err.println("[DB] Errore SQL durante il login: " + e.getMessage());
+                return null;
+            }
         }
 
         return risultati;
+    }
+
+    public static List<String> ricercaTipiCucina(String urlDB, String userDB, String passDB){
+        List<String> ris=new ArrayList<>();
+        String query="""
+    SELECT DISTINCT TRIM(x.tipo) AS tipo
+    FROM ristorantitheknife AS r
+    CROSS JOIN LATERAL unnest(string_to_array(r.tipo_cucina, ',')) AS x(tipo)
+    WHERE r.tipo_cucina IS NOT NULL
+    ORDER BY TRIM(x.tipo)
+    """;
+
+        try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
+             PreparedStatement ps=conn.prepareStatement(query)) {
+
+            ResultSet rs=ps.executeQuery();
+            while(rs.next()){
+                ris.add(rs.getString("tipo"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return ris;
     }
 }

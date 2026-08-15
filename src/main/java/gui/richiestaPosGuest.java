@@ -39,18 +39,22 @@ public class richiestaPosGuest extends JDialog{
         String[] richiesta={"POSIZIONE",citta,nazione};
         String rispServer=clientTK.inviaRichiesta(richiesta);
         System.out.println("[DEBUG] COORDINATE RICEVUTE: " + rispServer);
+        if(rispServer==null){
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Domicilio non riconosciuto",
+                    "Accesso Ospite",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+            return;
+        }
         JOptionPane.showMessageDialog(
                 this,
                 "Stai accedendo come ospite.\nAlcune funzionalità potrebbero essere limitate.",
                 "Accesso Ospite",
                 JOptionPane.INFORMATION_MESSAGE
         );
-        if(rispServer.startsWith("ERRORE:")){
-            //DOMICILIO NON RICONOSCIUTO
-            new homePageU(null,null).setVisible(true);
-        }else{
-            new homePageU(null,rispServer).setVisible(true);
-        }
+        new homePageU(null,rispServer).setVisible(true);
         this.dispose();
     }
 }
