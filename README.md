@@ -12,5 +12,5 @@ Create un database vuoto chiamato TheKnife
 Dopo averlo creato fate tasto destro sul database e cliccate restore
 
 4)
-Selezionate il file TheKnife.backup che vi ho dato e cliccate sul bottone restore
+Selezionate il file TheKnifev2.backup che vi ho dato e cliccate sul bottone restore
 
