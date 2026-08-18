@@ -78,7 +78,7 @@ public class clientTK {
             out.writeObject(richiesta);
             out.flush();
 
-            // 2. Legge la risposta del Server
+            // 2. cLegge la risposta del Server
             Object risposta = in.readObject();
 
             // 3. Restituisce la risposta alla GUI

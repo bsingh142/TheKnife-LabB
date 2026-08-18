@@ -80,7 +80,7 @@ public class homePageU extends JFrame{
                 }
             });
 
-            JPopupMenu menuTendina=creaMenu();
+            JPopupMenu menuTendina=creaMenu(this, nomeUtente);
             labelUsername.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -108,7 +108,7 @@ public class homePageU extends JFrame{
         setLocationRelativeTo(null);
     }
 
-    public static JPopupMenu creaMenu(){
+    public static JPopupMenu creaMenu(JFrame parent, String nomeUtente){
         JPopupMenu menuTendina=new JPopupMenu();
         JMenuItem preferiti=new JMenuItem("I miei ristoranti preferiti");
         JMenuItem recensioni=new JMenuItem("Le mie recensioni");
@@ -118,7 +118,8 @@ public class homePageU extends JFrame{
             System.out.println("PREFERITI");
         });
         recensioni.addActionListener(e->{
-            System.out.println("RECENSIONI");
+            MieRecensioni dialog = new MieRecensioni(parent, nomeUtente);
+            dialog.setVisible(true);
         });
         logout.addActionListener(e->{
             System.out.println("LOGOUT");

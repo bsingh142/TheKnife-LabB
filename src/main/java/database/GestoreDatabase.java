@@ -385,14 +385,14 @@ public class GestoreDatabase {
         }
     }
 
-    public static String eliminaRecensione(int idRecensione, int idUtente, String urlDB, String userDB, String passDB) {
+    public static String eliminaRecensione(int idRecensione, String autore, String urlDB, String userDB, String passDB) {
         String query = "DELETE FROM recensioni WHERE idrecensione = ? AND autore = ?";
 
         try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setInt(1, idRecensione);
-            pstmt.setInt(2, idUtente);
+            pstmt.setString(2, autore);
 
             int righeEliminate = pstmt.executeUpdate();
 
@@ -455,6 +455,66 @@ public class GestoreDatabase {
         }
 
         return "ERRORE: Ristorante non trovato.";
+    }
+
+    public static List<Recensione> visualizzaRecensioniUtente(String autore, String urlDB, String userDB, String passDB) {
+        List<Recensione> lista = new ArrayList<>();
+
+        String query = "SELECT idrecensione, autore, ristorante_id, stelle, testo, data, risposta " +
+                "FROM recensioni WHERE autore = ? ORDER BY data DESC, idrecensione DESC";
+
+        try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, autore);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Recensione r = new Recensione(
+                            rs.getInt("idrecensione"),
+                            rs.getString("autore"),
+                            rs.getInt("ristorante_id"),
+                            rs.getInt("stelle"),
+                            rs.getString("testo"),
+                            rs.getString("data"),
+                            rs.getString("risposta")
+                    );
+                    lista.add(r);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("[DB] Errore SQL durante il recupero recensioni utente: " + e.getMessage());
+        }
+
+        return lista;
+    }
+
+    public static String modificaRecensione(int idRecensione, String autore, int stelle, String testo, String urlDB, String userDB, String passDB) {
+        if (stelle < 1 || stelle > 5) {
+            return "ERRORE: La valutazione deve essere compresa tra 1 e 5 stelle.";
+        }
+        if (testo == null || testo.trim().isEmpty()) {
+            return "ERRORE: Il testo della recensione non può essere vuoto.";
+        }
+
+        // AND autore = ? impedisce di modificare recensioni di altri utenti
+        String query = "UPDATE recensioni SET stelle = ?, testo = ? WHERE idrecensione = ? AND autore = ?";
+
+        try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setInt(1, stelle);
+            pstmt.setString(2, testo.trim());
+            pstmt.setInt(3, idRecensione);
+            pstmt.setString(4, autore);
+
+            int righe = pstmt.executeUpdate();
+            return righe > 0 ? "OK: Recensione modificata con successo!" : "ERRORE: Recensione non trovata o non autorizzata.";
+
+        } catch (SQLException e) {
+            System.err.println("[DB] Errore SQL durante la modifica della recensione: " + e.getMessage());
+            return "ERRORE: Problema di comunicazione con il Database.";
+        }
     }
 }
 

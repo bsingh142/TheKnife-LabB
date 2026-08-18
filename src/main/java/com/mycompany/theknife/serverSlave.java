@@ -95,6 +95,12 @@ public class serverSlave extends Thread {
                     case "RIEPILOGO":
                         gestisciRiepilogo(pacchetto);
                         break;
+                    case "GET_RECENSIONI_UTENTE":
+                        gestisciGetRecensioniUtente(pacchetto);
+                        break;
+                    case "MODIFICA_RECENSIONE":
+                        gestisciModificaRecensione(pacchetto);
+                        break;
 
                     // Qui in futuro potrai aggiungere case "PRENOTA" ecc.
 
@@ -203,8 +209,8 @@ public class serverSlave extends Thread {
 
     private void gestisciEliminaRecensione(String[] pacchetto) throws IOException {
         int idRecensione = Integer.parseInt(pacchetto[1]);
-        int idUtente = Integer.parseInt(pacchetto[2]);
-        String esito = GestoreDatabase.eliminaRecensione(idRecensione, idUtente, urlDB, userDB, passDB);
+        String autore = (pacchetto[2]);
+        String esito = GestoreDatabase.eliminaRecensione(idRecensione, autore, urlDB, userDB, passDB);
         output.writeObject(esito);
         output.flush();
     }
@@ -216,6 +222,22 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
+    private void gestisciGetRecensioniUtente(String[] pacchetto) throws IOException {
+        String autore = pacchetto[1];
+        List<Recensione> lista = GestoreDatabase.visualizzaRecensioniUtente(autore, urlDB, userDB, passDB);
+        output.writeObject(lista);
+        output.flush();
+    }
+
+    private void gestisciModificaRecensione(String[] pacchetto) throws IOException {
+        int idRecensione = Integer.parseInt(pacchetto[1]);
+        String autore = pacchetto[2];
+        int stelle = Integer.parseInt(pacchetto[3]);
+        String testo = pacchetto[4];
+        String esito = GestoreDatabase.modificaRecensione(idRecensione, autore, stelle, testo, urlDB, userDB, passDB);
+        output.writeObject(esito);
+        output.flush();
+    }
 
 
 }
