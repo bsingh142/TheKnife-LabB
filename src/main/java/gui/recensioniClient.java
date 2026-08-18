@@ -17,6 +17,8 @@ public class recensioniClient extends JDialog{
     private JPanel VistaLog;
     private JPanel ListaRecensioni;
     private JScrollPane ScorriRecensioni;
+    private JLabel Stelle;
+    private JLabel RichiediRecensione;
 
     private final int idRistorante;
     private final String nomeUtente;
