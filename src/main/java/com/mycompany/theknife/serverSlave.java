@@ -1,6 +1,7 @@
 package com.mycompany.theknife;
 
 import database.GestoreDatabase; // Assicurati che il package sia corretto!
+import modelli.Recensione;
 import modelli.Ristorante;
 import modelli.Utente;
 
@@ -55,10 +56,14 @@ public class serverSlave extends Thread {
             if (oggettoRicevuto instanceof Utente) {
                 gestisciRegistrazione((Utente) oggettoRicevuto);
             }
+            // 2. Controllo per l'Inserimento Recensione (invia un oggetto Recensione)
+            else if (oggettoRicevuto instanceof Recensione) {
+                gestisciAggiungiRecensione((Recensione) oggettoRicevuto);}
             // 2. Controllo per il Login e comandi futuri (che inviano un Array di Stringhe)
             else if (oggettoRicevuto instanceof String[]) {
                 String[] pacchetto = (String[]) oggettoRicevuto;
                 String comando = pacchetto[0]; // La prima parola è il comando
+
 
                 // Il tuo SWITCH per gestire le varie funzionalità dell'app
                 switch (comando) {
@@ -78,8 +83,20 @@ public class serverSlave extends Thread {
                     case "TIPI_CUCINA":
                         gestisciTipiCucina();
                         break;
+                    case "GET_RECENSIONI":
+                        gestisciGetRecensioni(pacchetto);
+                        break;
+                    case "RISPONDI_RECENSIONE":
+                        gestisciRispondiRecensione(pacchetto);
+                        break;
+                    case "ELIMINA_RECENSIONE":
+                        gestisciEliminaRecensione(pacchetto);
+                        break;
+                    case "RIEPILOGO":
+                        gestisciRiepilogo(pacchetto);
+                        break;
 
-                    // Qui in futuro potrai aggiungere case "PRENOTA", case "RECENSISCI", ecc.
+                    // Qui in futuro potrai aggiungere case "PRENOTA" ecc.
 
                     default:
                         System.out.println("[SLAVE " + getId() + "] Comando sconosciuto: " + comando);
@@ -161,4 +178,44 @@ public class serverSlave extends Thread {
             e.printStackTrace();
         }
     }
+
+    private void gestisciAggiungiRecensione(Recensione recensione) throws IOException {
+        System.out.println("[SLAVE " + getId() + "] Nuova RECENSIONE per ristorante ID: " + recensione.getRistoranteId());
+        String risposta = GestoreDatabase.aggiungiRecensione(recensione, urlDB, userDB, passDB);
+        output.writeObject(risposta);
+        output.flush();
+    }
+
+    private void gestisciGetRecensioni(String[] pacchetto) throws IOException {
+        int idRistorante = Integer.parseInt(pacchetto[1]);
+        List<Recensione> lista = GestoreDatabase.visualizzaRecensioni(idRistorante, urlDB, userDB, passDB);
+        output.writeObject(lista);
+        output.flush();
+    }
+
+    private void gestisciRispondiRecensione(String[] pacchetto) throws IOException {
+        int idRecensione = Integer.parseInt(pacchetto[1]);
+        String testoRisposta = pacchetto[2];
+        String esito = GestoreDatabase.rispondiARecensione(idRecensione, testoRisposta, urlDB, userDB, passDB);
+        output.writeObject(esito);
+        output.flush();
+    }
+
+    private void gestisciEliminaRecensione(String[] pacchetto) throws IOException {
+        int idRecensione = Integer.parseInt(pacchetto[1]);
+        int idUtente = Integer.parseInt(pacchetto[2]);
+        String esito = GestoreDatabase.eliminaRecensione(idRecensione, idUtente, urlDB, userDB, passDB);
+        output.writeObject(esito);
+        output.flush();
+    }
+
+    private void gestisciRiepilogo(String[] pacchetto) throws IOException {
+        int idRistorante = Integer.parseInt(pacchetto[1]);
+        String riepilogo = GestoreDatabase.visualizzaRiepilogo(idRistorante, urlDB, userDB, passDB);
+        output.writeObject(riepilogo);
+        output.flush();
+    }
+
+
+
 }

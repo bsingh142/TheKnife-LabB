@@ -2,6 +2,7 @@ package database;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import modelli.Recensione;
 import modelli.Ristorante;
 import modelli.Utente;
 import org.mindrot.jbcrypt.BCrypt;
@@ -293,5 +294,167 @@ public class GestoreDatabase {
             throw new RuntimeException(e);
         }
         return ris;
+
+
+
+    }
+
+    public static String aggiungiRecensione(Recensione recensione, String urlDB, String userDB, String passDB) {
+        if (recensione.getStelle() < 1 || recensione.getStelle() > 5) {
+            return "ERRORE: La valutazione deve essere compresa tra 1 e 5 stelle.";
+        }
+
+        String query = "INSERT INTO recensioni (autore, ristorante_id, stelle, testo, data) " +
+                "VALUES (?, ?, ?, ?, CURRENT_DATE)";
+
+        try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, recensione.getIdUtente());
+            pstmt.setInt(2, recensione.getRistoranteId());
+            pstmt.setInt(3, recensione.getStelle());
+            pstmt.setString(4, recensione.getTesto());
+
+            int righeInserite = pstmt.executeUpdate();
+            return righeInserite > 0 ? "OK: Recensione aggiunta con successo!" : "ERRORE: Impossibile salvare la recensione.";
+
+        } catch (SQLException e) {
+            System.err.println("[DB] Errore SQL durante l'inserimento della recensione: " + e.getMessage());
+            return "ERRORE: Problema di comunicazione con il Database.";
+        }
+    }
+
+    public static List<Recensione> visualizzaRecensioni(int idRistorante, String urlDB, String userDB, String passDB) {
+        List<Recensione> listaRecensioni = new ArrayList<>();
+
+        // Selezioniamo tutti i campi necessari mantenendo le recensioni più recenti in alto
+        String query = "SELECT idrecensione, autore, ristorante_id, stelle, testo, data, risposta " +
+                "FROM recensioni " +
+                "WHERE ristorante_id = ? " +
+                "ORDER BY data DESC, idrecensione DESC";
+
+        try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setInt(1, idRistorante);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    // Utilizza il costruttore completo definito nella tua classe Recensione
+                    Recensione r = new Recensione(
+                            rs.getInt("idrecensione"),
+                            rs.getString("autore"),
+                            rs.getInt("ristorante_id"),
+                            rs.getInt("stelle"),
+                            rs.getString("testo"),
+                            rs.getString("data"),
+                            rs.getString("risposta") // Può essere null se non ancora presente
+                    );
+
+                    listaRecensioni.add(r);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("[DB] Errore SQL durante il recupero delle recensioni: " + e.getMessage());
+        }
+
+        return listaRecensioni;
+    }
+
+    public static String rispondiARecensione(int idRecensione, String testoRisposta, String urlDB, String userDB, String passDB) {
+        if (testoRisposta == null || testoRisposta.trim().isEmpty()) {
+            return "ERRORE: La risposta non può essere vuota.";
+        }
+
+        String query = "UPDATE recensioni SET risposta = ? WHERE idrecensione = ?";
+
+        try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, testoRisposta.trim());
+            pstmt.setInt(2, idRecensione);
+
+            int righeAggiornate = pstmt.executeUpdate();
+            return righeAggiornate > 0 ? "OK: Risposta salvata con successo!" : "ERRORE: Recensione non trovata.";
+
+
+        } catch (SQLException e) {
+            System.err.println("[DB] Errore SQL durante l'inserimento della risposta: " + e.getMessage());
+            return "ERRORE: Problema di comunicazione con il Database.";
+        }
+    }
+
+    public static String eliminaRecensione(int idRecensione, int idUtente, String urlDB, String userDB, String passDB) {
+        String query = "DELETE FROM recensioni WHERE idrecensione = ? AND autore = ?";
+
+        try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setInt(1, idRecensione);
+            pstmt.setInt(2, idUtente);
+
+            int righeEliminate = pstmt.executeUpdate();
+
+            return righeEliminate > 0 ? "OK: Recensione eliminata con successo!" : "ERRORE: Impossibile eliminare la recensione.";
+
+        } catch (SQLException e) {
+            System.err.println("[DB] Errore SQL durante l'eliminazione della recensione: " + e.getMessage());
+            return "ERRORE: Problema di comunicazione con il Database.";
+        }
+    }
+
+    public static String visualizzaRiepilogo(int idRistorante, String urlDB, String userDB, String passDB) {
+        String query = "SELECT " +
+                "COUNT(*) AS totale, " +
+                "COALESCE(ROUND(AVG(stelle), 2), 0) AS media, " +
+                "COUNT(CASE WHEN stelle = 5 THEN 1 END) AS s5, " +
+                "COUNT(CASE WHEN stelle = 4 THEN 1 END) AS s4, " +
+                "COUNT(CASE WHEN stelle = 3 THEN 1 END) AS s3, " +
+                "COUNT(CASE WHEN stelle = 2 THEN 1 END) AS s2, " +
+                "COUNT(CASE WHEN stelle = 1 THEN 1 END) AS s1 " +
+                "FROM recensioni WHERE id_ristorante = ?";
+
+        try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setInt(1, idRistorante);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    int totale = rs.getInt("totale");
+
+                    if (totale == 0) {
+                        return "RIEPILOGO: Nessuna recensione presente per questo ristorante.";
+                    }
+
+                    double media = rs.getDouble("media");
+                    int s5 = rs.getInt("s5");
+                    int s4 = rs.getInt("s4");
+                    int s3 = rs.getInt("s3");
+                    int s2 = rs.getInt("s2");
+                    int s1 = rs.getInt("s1");
+
+                    return String.format(
+                            "RIEPILOGO RISTORANTE (ID %d)\n" +
+                                    "★ Media Valutazione: %.2f / 5.0 (Totale: %d recensioni)\n" +
+                                    "----------------------------------------\n" +
+                                    "5 Stelle: %d\n" +
+                                    "4 Stelle: %d\n" +
+                                    "3 Stelle: %d\n" +
+                                    "2 Stelle: %d\n" +
+                                    "1 Stella : %d",
+                            idRistorante, media, totale, s5, s4, s3, s2, s1
+                    );
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("[DB] Errore SQL durante il calcolo del riepilogo: " + e.getMessage());
+            return "ERRORE: Impossibile recuperare il riepilogo dal Database.";
+        }
+
+        return "ERRORE: Ristorante non trovato.";
     }
 }
+

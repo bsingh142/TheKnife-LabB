@@ -40,6 +40,28 @@ public class homePageU extends JFrame{
 
         riempiTabella(tabellaRistoranti,new String[]{"RISTORANTI","TUTTI"});
 
+        tabellaRistoranti.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) { // Rileva il doppio click
+                    int row = tabellaRistoranti.getSelectedRow();
+                    if (row != -1) {
+                        int idRistorante = ((Number) tabellaRistoranti.getValueAt(row, 0)).intValue();
+                        String nomeRistorante = (String) tabellaRistoranti.getValueAt(row, 1);
+
+                        // Apre il JDialog recensioniClient passandogli i dati del ristorante selezionato
+                        recensioniClient dialog = new recensioniClient(
+                                homePageU.this,
+                                idRistorante,
+                                nomeRistorante,
+                                nomeUtente
+                        );
+                        dialog.setVisible(true);
+                    }
+                }
+            }
+        });
+
         if(nomeUtente==null){
             labelUsername.setVisible(false);
         }else{
@@ -66,6 +88,8 @@ public class homePageU extends JFrame{
                 }
             });
         }
+
+
 
         bottoneFiltri.addActionListener(new ActionListener() {
             @Override
@@ -151,6 +175,8 @@ public class homePageU extends JFrame{
             });
         }
     }
+
+
 
 }
 
