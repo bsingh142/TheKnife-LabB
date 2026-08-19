@@ -72,7 +72,7 @@ public class Home extends JFrame {
      */
     private void continuaComeOspite() {
         new richiestaPosGuest(Home.this).setVisible(true);
-        this.dispose();
+        //this.dispose();
     }
 
     /**

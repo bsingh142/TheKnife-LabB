@@ -15,6 +15,7 @@ public class richiestaPosGuest extends JDialog{
         super(padre,"Inserisci posizione",true);
         setContentPane(mainPanel);
 
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         if(invioButton!=null){
             invioButton.addActionListener(e->apriHomePageU());
         }
