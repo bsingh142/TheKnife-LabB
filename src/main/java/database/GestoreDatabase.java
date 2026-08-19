@@ -214,6 +214,18 @@ public class GestoreDatabase {
 
             //AGGIUNGERE IL CONTROLLO PER LA MEDIA DELLE STELLE DELLE RECENSIONI
 
+            if(!tmp[5].equals("Qualsiasi")){
+                query.append("""
+                     AND (
+                        SELECT AVG(rec.stelle)
+                        FROM recensioni rec
+                        WHERE rec.ristorante_id = r.id
+                    ) >= ?
+                    """);
+
+                parametri.add(Double.parseDouble(tmp[5]));
+            }
+
             if(!distanze[0].equals("Qualsiasi")){
                 query.append("""
                      AND ST_DistanceSphere(
