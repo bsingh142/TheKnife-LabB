@@ -10,6 +10,7 @@ public class richiestaPosGuest extends JDialog{
     private JTextField nomeCitta;
     private JTextField nomeNazione;
     private JButton invioButton;
+    private boolean successo=false;
 
     public richiestaPosGuest(JFrame padre){
         super(padre,"Inserisci posizione",true);
@@ -22,6 +23,7 @@ public class richiestaPosGuest extends JDialog{
 
         pack();
         setLocationRelativeTo(padre);
+        this.setVisible(true);
     }
 
     private void apriHomePageU(){
@@ -55,8 +57,13 @@ public class richiestaPosGuest extends JDialog{
                 "Accesso Ospite",
                 JOptionPane.INFORMATION_MESSAGE
         );
+        successo=true;
         new homePageU(null,rispServer).setVisible(true);
         this.dispose();
+    }
+
+    public boolean getSuccesso() {
+        return successo;
     }
 }
 

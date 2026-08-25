@@ -98,8 +98,7 @@ public class dialogFiltri extends JDialog {
 
     public void applicaFiltri(){
         String filtriScelti="";
-        int cont=0; //Contatore per controllare se l'utente non ha modificato nessun parametro dei filti.
-                            // Se arriva a 5 significa che vuole vedere tutti i ristoranti senza filtrarli, quindi non ha senso fare una query e lo facciamo uscire.
+        int cont=0;
 
         switch (raggioRicerca.getValue()){
             case 0:
@@ -134,7 +133,7 @@ public class dialogFiltri extends JDialog {
             int pMin=Integer.parseInt(s1);
             int pMax=Integer.parseInt(s2);
 
-            if((pMin<0 || pMin>100) || (pMax<0 || pMax>100)){
+            if((pMin<0 || pMin>100) || (pMax<0 || pMax>100) || (pMin>=pMax)){
                 JOptionPane.showMessageDialog(
                         this,
                         "Per favore inserire solo numeri Compresi tra 1 e 100",
@@ -151,22 +150,12 @@ public class dialogFiltri extends JDialog {
             return;
         }
 
-        if(s1.equals("1") && s2.equals("100")){
+        if(Integer.parseInt(s1)==1 && Integer.parseInt(s2)==100) cont++;
+        filtriScelti+=s1+"/"+s2+"=";
+
+        if(tipiCucina.getItemAt(tipiCucina.getSelectedIndex()).equals("Qualsiasi")){
             cont++;
         }
-
-        if(tipiCucina.getSelectedIndex()==0) cont++;
-        if(deliveryI.isSelected() && prenotazioneI.isSelected()) cont+=2;;
-
-        if(numeroStelle.getSelectedIndex()==0){
-            cont++;;
-        }
-
-        if(cont == 6){
-            this.dispose();
-            return;
-        }
-        filtriScelti+=s1+"/"+s2+"=";
         filtriScelti+=tipiCucina.getItemAt(tipiCucina.getSelectedIndex())+"=";
         if(deliveryS.isSelected()){
             filtriScelti+="true=";
@@ -174,6 +163,7 @@ public class dialogFiltri extends JDialog {
             filtriScelti+="false=";
         }else{
             filtriScelti+="Qualsiasi=";
+            cont++;
         }
         if(prenotazioneS.isSelected()){
             filtriScelti+="true=";
@@ -181,12 +171,16 @@ public class dialogFiltri extends JDialog {
             filtriScelti+="false=";
         }else{
             filtriScelti+="Qualsiasi=";
+            cont++;
         }
+        if(numeroStelle.getSelectedIndex()==0)cont++;
         filtriScelti+=String.valueOf(numeroStelle.getSelectedIndex());
 
-        System.out.println(filtriScelti);
-        ristorantiFiltrati= clientTK.inviaRichiesta(new String[]{"RISTORANTI",filtriScelti,posUtente});
-
+        if(cont==6) {
+            ristorantiFiltrati = clientTK.inviaRichiesta(new String[]{"RISTORANTI", "TUTTI"});
+        }else {
+            ristorantiFiltrati = clientTK.inviaRichiesta(new String[]{"RISTORANTI", filtriScelti, posUtente});
+        }
         this.dispose();
     }
 

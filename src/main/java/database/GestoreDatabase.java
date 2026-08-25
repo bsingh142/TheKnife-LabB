@@ -214,7 +214,7 @@ public class GestoreDatabase {
 
             //AGGIUNGERE IL CONTROLLO PER LA MEDIA DELLE STELLE DELLE RECENSIONI
 
-            if(!tmp[5].equals("Qualsiasi")){
+            if(!tmp[5].equals("0")){
                 query.append("""
                      AND (
                         SELECT AVG(rec.stelle)

@@ -71,8 +71,8 @@ public class Home extends JFrame {
      * Metodo per gestire l'accesso limitato come ospite.
      */
     private void continuaComeOspite() {
-        new richiestaPosGuest(Home.this).setVisible(true);
-        //this.dispose();
+        richiestaPosGuest rPG=new richiestaPosGuest(Home.this);
+        if(rPG.getSuccesso()) this.dispose();
     }
 
     /**
