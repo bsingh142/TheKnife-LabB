@@ -19,6 +19,7 @@ public class recensioniClient extends JDialog{
     private JScrollPane ScorriRecensioni;
     private JLabel Stelle;
     private JLabel RichiediRecensione;
+    private JButton PreferitiButton;
 
     private final int idRistorante;
     private final String nomeUtente;
@@ -46,7 +47,7 @@ public class recensioniClient extends JDialog{
             comboStelle.setSelectedIndex(4); // Default: 5 stelle
         }
 
-        // Imposta il layout verticale per il pannello interno dello ScrollPane
+
         ListaRecensioni.setLayout(new BoxLayout(ListaRecensioni, BoxLayout.Y_AXIS));
 
         // Gestione visibilità form per utente Guest
@@ -54,6 +55,7 @@ public class recensioniClient extends JDialog{
             VistaLog.setVisible(false); // Nasconde l'intero pannello di inserimento se non loggato
         } else {
             ButtonInvio.addActionListener(e -> inviaRecensione());
+            PreferitiButton.addActionListener(e -> aggiungPreferito());
         }
 
         // Carica le recensioni dal Server
@@ -132,6 +134,23 @@ public class recensioniClient extends JDialog{
             JOptionPane.showMessageDialog(this, risposta, "Errore", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+        private void aggiungPreferito(){
+            String[] pacchetto = {"AGGIUNGI_PREFERITO", nomeUtente, String.valueOf(idRistorante)};
+            String risposta = clientTK.inviaRichiesta(pacchetto);
+
+            if(risposta!=null && risposta.startsWith("OK")){
+                JOptionPane.showMessageDialog(this, risposta, "Esito", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, risposta, "Errore", JOptionPane.ERROR_MESSAGE);
+            }
+
+
+        }
+
+
+
+
 
 
 

@@ -101,6 +101,12 @@ public class serverSlave extends Thread {
                     case "MODIFICA_RECENSIONE":
                         gestisciModificaRecensione(pacchetto);
                         break;
+                    case "AGGIUNGI_PREFERITO":
+                        gestisciAggiungiPreferito(pacchetto);
+                        break;
+                    case "RIMUOVI_PREFERITO":
+                        gestisciRimuoviPreferito(pacchetto);
+                        break;
 
                     // Qui in futuro potrai aggiungere case "PRENOTA" ecc.
 
@@ -238,6 +244,25 @@ public class serverSlave extends Thread {
         output.writeObject(esito);
         output.flush();
     }
+    private void gestisciAggiungiPreferito(String[] pacchetto)throws IOException {
+        String autore = pacchetto[1];
+        int idRistorante = Integer.parseInt(pacchetto[2]);
+        String esito = GestoreDatabase.aggiungiPreferito(autore, idRistorante, urlDB, userDB, passDB);
+        output.writeObject(esito);
+        output.flush();
+    }
+
+    private void gestisciRimuoviPreferito(String[] pacchetto) throws IOException{
+        String autore = pacchetto[1];
+        int idRistorante = Integer.parseInt(pacchetto[2]);
+        String esito = GestoreDatabase.rimuoviPreferito(autore, idRistorante, urlDB, userDB, passDB);
+        output.writeObject(esito);
+        output.flush();
+    }
+
+
+
+
 
 
 }

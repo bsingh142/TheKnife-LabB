@@ -311,6 +311,46 @@ public class GestoreDatabase {
 
     }
 
+    public static String aggiungiPreferito(String user, int ristorante, String urlDB, String userDB, String passDB){
+        String query = "INSERT INTO preferiti(username, ristorante_id)" + "VALUES(?, ?)";
+        try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, user);
+            pstmt.setInt(2, ristorante);
+            pstmt.executeUpdate();
+            return "OK: Ristorante aggiunto ai preferiti!";
+        }catch (SQLException e) {
+            System.err.println("[DB] Errore SQL durante l'aggiunta ai preferiti: " + e.getMessage());
+            return "ERRORE: Problema di comunicazione con il Database.";
+        }
+    }
+
+    public static String rimuoviPreferito(String user, int ristorante, String urlDB, String userDB, String passDB){
+        String query = "DELETE FROM preferiti WHERE ristorante_id = ? AND username = ?";
+        try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, user);
+            pstmt.setInt(2, ristorante);
+            pstmt.executeUpdate();
+            int righeEliminate = pstmt.executeUpdate();
+
+            return righeEliminate > 0 ? "OK: Recensione eliminata con successo!" : "ERRORE: Impossibile eliminare la recensione.";
+        }catch (SQLException e) {
+            System.err.println("[DB] Errore SQL durante la rimozione dai preferiti: " + e.getMessage());
+            return "ERRORE: Problema di comunicazione con il Database.";
+        }
+
+    }
+
+    public static List<Recensione> visualizzaPreferiti(String autore, String urlDB, String userDB, String passDB) {
+
+        String query = "SELECT ristorante_id " + "FROM preferiti WHERE autore = ? ";
+
+
+    }
+
     public static String aggiungiRecensione(Recensione recensione, String urlDB, String userDB, String passDB) {
         if (recensione.getStelle() < 1 || recensione.getStelle() > 5) {
             return "ERRORE: La valutazione deve essere compresa tra 1 e 5 stelle.";
