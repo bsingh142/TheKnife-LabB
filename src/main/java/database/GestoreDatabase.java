@@ -333,7 +333,7 @@ public class GestoreDatabase {
 
             pstmt.setString(1, user);
             pstmt.setInt(2, ristorante);
-            pstmt.executeUpdate();
+
             int righeEliminate = pstmt.executeUpdate();
 
             return righeEliminate > 0 ? "OK: Recensione eliminata con successo!" : "ERRORE: Impossibile eliminare la recensione.";
@@ -344,11 +344,41 @@ public class GestoreDatabase {
 
     }
 
-    public static List<Recensione> visualizzaPreferiti(String autore, String urlDB, String userDB, String passDB) {
+    public static List<Ristorante> visualizzaPreferiti(String username, String urlDB, String userDB, String passDB) {
+        List<Ristorante> lista = new ArrayList<>();
 
-        String query = "SELECT ristorante_id " + "FROM preferiti WHERE autore = ? ";
+        String query = "SELECT r.* FROM preferiti p " +
+                "JOIN ristorantitheknife r ON p.ristorante_id = r.id " +
+                "WHERE p.username = ?";
 
+        try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
 
+            pstmt.setString(1, username);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Ristorante r = new Ristorante(
+                            rs.getInt("id"),
+                            rs.getString("nome"),
+                            rs.getString("indirizzo"),
+                            rs.getString("citta"),
+                            rs.getString("nazione"),
+                            rs.getDouble("latitudine"),
+                            rs.getDouble("longitudine"),
+                            rs.getString("fascia_prezzo"),
+                            rs.getBoolean("delivery"),
+                            rs.getBoolean("prenotazione_online"),
+                            rs.getString("tipo_cucina"),
+                            rs.getString("proprietario"));
+                    lista.add(r);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("[DB] Errore SQL durante il recupero dei preferiti: " + e.getMessage());
+        }
+
+        return lista;
     }
 
     public static String aggiungiRecensione(Recensione recensione, String urlDB, String userDB, String passDB) {

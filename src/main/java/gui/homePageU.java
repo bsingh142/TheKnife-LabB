@@ -115,7 +115,8 @@ public class homePageU extends JFrame{
         JMenuItem logout=new JMenuItem("Logout");
 
         preferiti.addActionListener(e->{
-            System.out.println("PREFERITI");
+            MieiPreferiti dialog = new MieiPreferiti(parent, nomeUtente);
+            dialog.setVisible(true);
         });
         recensioni.addActionListener(e->{
             MieRecensioni dialog = new MieRecensioni(parent, nomeUtente);
