@@ -331,8 +331,8 @@ public class GestoreDatabase {
         try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
-            pstmt.setString(1, user);
-            pstmt.setInt(2, ristorante);
+            pstmt.setString(2, user);
+            pstmt.setInt(1, ristorante);
 
             int righeEliminate = pstmt.executeUpdate();
 

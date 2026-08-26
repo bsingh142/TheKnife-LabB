@@ -1,66 +1,82 @@
 package gui;
 
 import com.mycompany.theknife.clientTK;
-import modelli.Recensione;
 import modelli.Ristorante;
 
 import javax.swing.*;
-import java.awt.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
-public class MieiPreferiti  extends JDialog{
+public class MieiPreferiti extends JDialog {
     private JPanel panel1;
     private JLabel TitoloPreferiti;
-    private JPanel ListaPreferiti;
-    private JScrollPane ScorriPreferiti;
+    private JTable TabellaPreferiti;
 
-    private final String Utente;
+    private final String nomeUtente;
 
     public MieiPreferiti(JFrame parent, String nomeUtente) {
         super(parent, "I miei preferiti", true);
-        this.Utente = nomeUtente;
+        this.nomeUtente = nomeUtente;
 
         if (panel1 == null) {
-            throw new IllegalStateException("Il pannello listaPreferiti non è stato associato correttamente nel file MieiPreferiti.form");
+            throw new IllegalStateException("Il pannello panel1 non è stato associato correttamente nel file MieiPreferiti.form");
         }
 
         setContentPane(panel1);
-        setSize(550, 600);
+        setSize(650, 500);
         setLocationRelativeTo(parent);
 
-        ListaPreferiti.setLayout(new BoxLayout(ListaPreferiti, BoxLayout.Y_AXIS));
+        String[] colonne = {"Id Ristorante", "Nome", "Città", "Nazione", "Fascia prezzo", "Tipo di cucina"};
+        TabellaPreferiti.setModel(new DefaultTableModel(colonne, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        });
+        TabellaPreferiti.getTableHeader().setReorderingAllowed(false);
+
+        TabellaPreferiti.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int row = TabellaPreferiti.getSelectedRow();
+                    if (row != -1) {
+                        int idRistorante = ((Number) TabellaPreferiti.getValueAt(row, 0)).intValue();
+                        String nomeRistorante = (String) TabellaPreferiti.getValueAt(row, 1);
+
+                        DettaglioPreferiti dettaglio = new DettaglioPreferiti(
+                                MieiPreferiti.this, idRistorante, nomeRistorante, nomeUtente
+                        );
+                        dettaglio.setVisible(true);
+
+                        caricaPreferiti(); // refresh dopo eventuale rimozione
+                    }
+                }
+            }
+        });
 
         caricaPreferiti();
     }
 
     private void caricaPreferiti() {
-        ListaPreferiti.removeAll();
+        DefaultTableModel dtm = (DefaultTableModel) TabellaPreferiti.getModel();
+        dtm.setRowCount(0);
 
-        List<Ristorante> preferiti = clientTK.inviaRichiesta(new String[]{"GET_PREFERITI", Utente});
+        List<Ristorante> preferiti = clientTK.inviaRichiesta(new String[]{"GET_PREFERITI", nomeUtente});
 
-        if ( preferiti == null || preferiti.isEmpty()) {
-            JLabel lblEmpty = new JLabel("Non hai ancora nessun reistorante tra i preferiti.");
-            lblEmpty.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            ListaPreferiti.add(lblEmpty);
-        } else {
+        if (preferiti != null) {
             for (Ristorante r : preferiti) {
-                JPanel card = new JPanel(new BorderLayout(5, 5));
-                card.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createEmptyBorder(5, 5, 5, 5),
-                        BorderFactory.createEtchedBorder()
-                ));
-                card.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-                JLabel lblHeader = new JLabel(r.getNome() + " — " + r.getCitta() + ", " + r.getNazione());
-                lblHeader.setFont(new Font("Arial", Font.BOLD, 12));
-
-                card.add(lblHeader, BorderLayout.NORTH);
-
-                ListaPreferiti.add(card);
+                dtm.addRow(new Object[]{
+                        r.getId(),
+                        r.getNome(),
+                        r.getCitta(),
+                        r.getNazione(),
+                        r.getFasciaPrezzo(),
+                        r.getTipoCucina()
+                });
             }
         }
-
-        ListaPreferiti.revalidate();
-        ListaPreferiti.repaint();
     }
 }
