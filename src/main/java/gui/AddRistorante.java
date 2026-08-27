@@ -133,16 +133,6 @@ public class AddRistorante extends JFrame {
         }
     }
 
-    /**
-     * Verifica che l' indirizzo sia nel formato corretto .
-     * @param Stringa Il testo inserito dall'utente.
-     * @return true se è formattata bene, false se è sbagliata.
-     */
-    //private boolean isindirizzovalido(String Stringa) {}
-
-
-
-
     //Chiude la finestra corrente e riapre il menu principale (Home)
     private void tornaAllaHome() {
         new homePageU(username,"");
