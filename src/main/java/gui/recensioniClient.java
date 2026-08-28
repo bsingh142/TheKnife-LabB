@@ -169,7 +169,7 @@ public class recensioniClient extends JDialog {
         String[] pacchetto = {"AGGIUNGI_PREFERITO", nomeUtente, String.valueOf(idRistorante)};
         String risposta = clientTK.inviaRichiesta(pacchetto);
         if (risposta != null && risposta.startsWith("OK")) {
-            JOptionPane.showMessageDialog(this, risposta, "Esito", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, risposta.substring(3), "Esito", JOptionPane.INFORMATION_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(this, risposta, "Errore", JOptionPane.ERROR_MESSAGE);
         }

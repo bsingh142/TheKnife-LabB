@@ -320,7 +320,7 @@ public class GestoreDatabase {
             pstmt.setString(1, user);
             pstmt.setInt(2, ristorante);
             pstmt.executeUpdate();
-            return "Ristorante aggiunto ai preferiti!";
+            return "OK Ristorante aggiunto ai preferiti!";
         }catch (SQLException e) {
             System.err.println("[DB] Errore SQL durante l'aggiunta ai preferiti: " + e.getMessage());
             return "ERRORE: Problema di comunicazione con il Database.";

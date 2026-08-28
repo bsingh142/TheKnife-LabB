@@ -21,6 +21,7 @@ public class homePageU extends JFrame {
     private JTable tabellaRistoranti;
     private JButton bottoneFiltri;
     private JButton eliminaButton;
+    private JButton buttonReset;
     private String posizioneUtente;
     private static String username;
     private Utente u;
@@ -108,6 +109,13 @@ public class homePageU extends JFrame {
                 if (listaR != null) {
                     applicaFiltri(tabellaRistoranti, listaR);
                 }
+            }
+        });
+
+        buttonReset.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                riempiTabella(tabellaRistoranti, new String[]{"RISTORANTI", "TUTTI"});
             }
         });
 
