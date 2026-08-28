@@ -85,8 +85,4 @@ public class Recensione implements Serializable {
     public void setRisposta(String risposta) {
         this.risposta = risposta;
     }
-
-
-
-
 }

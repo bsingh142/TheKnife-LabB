@@ -9,10 +9,14 @@ public class EliminaRistorante extends JFrame {
     private JTextField txtid;
     private JButton elimina;
     private JPanel mainPanel;
-    private String username;
 
-    EliminaRistorante(String u){
-        username=u;
+    private String username;
+    private homePageU homeParent; // Riferimento alla Home
+
+    public EliminaRistorante(String u, homePageU parent){
+        this.username = u;
+        this.homeParent = parent;
+
         if (mainPanel == null) {
             throw new IllegalStateException("Il mainPanel non è stato associato correttamente");
         }
@@ -20,31 +24,40 @@ public class EliminaRistorante extends JFrame {
         setContentPane(mainPanel);
         setTitle("Eliminazione ristorante - TheKnife");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
         pack();
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(parent);
 
         elimina.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-               verificaElimazione(txtid.getText());
+                verificaElimazione(txtid.getText());
             }
         });
-
     }
 
     private void verificaElimazione(String id){
-        if(id == null){
-            JOptionPane.showMessageDialog(this, "Id non valido", "Valore non inserito", JOptionPane.ERROR_MESSAGE);
-            this.dispose();}
+        if(id == null || id.trim().isEmpty()){
+            JOptionPane.showMessageDialog(this, "Inserisci un ID.", "Valore non inserito", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         if(!id.trim().matches("\\d+")){
-            JOptionPane.showMessageDialog(this, "Id non valido", "Valore non consentito", JOptionPane.ERROR_MESSAGE);
-            this.dispose();}
+            JOptionPane.showMessageDialog(this, "Id non valido. Inserisci solo numeri.", "Valore non consentito", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-        Integer i= clientTK.inviaRichiesta(new String[] {"ELIMINA_RISTORANTE", username, id.trim()});
-        JOptionPane.showMessageDialog(this, "L' eliminazione ha modificato "+ i + "righe.", "Operazione conclusa", JOptionPane.INFORMATION_MESSAGE);
+        Integer i = clientTK.inviaRichiesta(new String[] {"ELIMINA_RISTORANTE", username, id.trim()});
 
+        if (i != null && i > 0) {
+            JOptionPane.showMessageDialog(this, "Ristorante eliminato con successo.", "Operazione conclusa", JOptionPane.INFORMATION_MESSAGE);
 
+            // AGGIORNIAMO LA TABELLA DELLA HOME!
+            if (homeParent != null) {
+                homeParent.aggiornaVistaProprietario();
+            }
+
+            this.dispose(); // Chiudiamo la finestrella
+        } else {
+            JOptionPane.showMessageDialog(this, "Impossibile eliminare. Verifica l'ID o i permessi.", "Errore", JOptionPane.ERROR_MESSAGE);
         }
     }
-
+}

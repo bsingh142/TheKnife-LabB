@@ -11,22 +11,26 @@ public class richiestaPosGuest extends JDialog{
     private JTextField nomeNazione;
     private JButton invioButton;
 
+    // Variabile mantenuta dal branch "modifiche" per chiudere la Home correttamente
+    private boolean successo = false;
+
     public richiestaPosGuest(JFrame padre){
         super(padre,"Inserisci posizione",true);
         setContentPane(mainPanel);
 
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        if(invioButton!=null){
-            invioButton.addActionListener(e->apriHomePageU());
+        if(invioButton != null){
+            invioButton.addActionListener(e -> apriHomePageU());
         }
 
         pack();
         setLocationRelativeTo(padre);
+        this.setVisible(true);
     }
 
     private void apriHomePageU(){
-        String citta=nomeCitta.getText();
-        String nazione=nomeNazione.getText();
+        String citta = nomeCitta.getText();
+        String nazione = nomeNazione.getText();
 
         if (citta.isEmpty() || nazione.isEmpty()) {
             JOptionPane.showMessageDialog(
@@ -37,10 +41,12 @@ public class richiestaPosGuest extends JDialog{
             );
             return;
         }
-        String[] richiesta={"POSIZIONE",citta,nazione};
-        String rispServer=clientTK.inviaRichiesta(richiesta);
+
+        String[] richiesta = {"POSIZIONE", citta, nazione};
+        String rispServer = clientTK.inviaRichiesta(richiesta);
         System.out.println("[DEBUG] COORDINATE RICEVUTE: " + rispServer);
-        if(rispServer==null){
+
+        if(rispServer == null){
             JOptionPane.showMessageDialog(
                     this,
                     "Domicilio non riconosciuto",
@@ -49,15 +55,21 @@ public class richiestaPosGuest extends JDialog{
             );
             return;
         }
+
         JOptionPane.showMessageDialog(
                 this,
                 "Stai accedendo come ospite.\nAlcune funzionalità potrebbero essere limitate.",
                 "Accesso Ospite",
                 JOptionPane.INFORMATION_MESSAGE
         );
-        new homePageU(null,rispServer).setVisible(true);
+
+        successo = true; // Impostiamo a true per far chiudere la Home
+        new homePageU(null, rispServer).setVisible(true);
         this.dispose();
     }
+
+    // Metodo getter necessario alla classe Home
+    public boolean getSuccesso() {
+        return successo;
+    }
 }
-
-

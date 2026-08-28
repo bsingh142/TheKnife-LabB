@@ -79,7 +79,6 @@ public class Ristorante implements Serializable {
     public String getTipoCucina() { return tipoCucina; }
     public String getProprietario() { return proprietario; }
 
-
     // Metodi Setter
     public void setId(long id) { this.id = id; }
     public void setNome(String nome) { this.nome = nome; }

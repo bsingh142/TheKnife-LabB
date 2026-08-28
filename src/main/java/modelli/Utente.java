@@ -40,7 +40,6 @@ public class Utente implements Serializable {
      */
     public Utente() {}
 
-
     /**
      * Costruttore per utenti ottenuti dal db
      * Manca la pwd perchè serve solo per avere le informazioni utente durante l'uso della applicazione

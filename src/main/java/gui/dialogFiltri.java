@@ -22,12 +22,13 @@ public class dialogFiltri extends JDialog {
     private JRadioButton deliveryI;
     private JRadioButton prenotazioneI;
     private JComboBox tipiCucina;
+
     private String posUtente;
     private List<Ristorante> ristorantiFiltrati;
 
-    public dialogFiltri(JFrame padre,String posUtente){
+    public dialogFiltri(JFrame padre, String posUtente) {
         super(padre, "Filtri ristoranti", true);
-        this.posUtente=posUtente;
+        this.posUtente = posUtente;
 
         setContentPane(mainPanel);
 
@@ -38,18 +39,18 @@ public class dialogFiltri extends JDialog {
         prezzoMax.setText("100");
         fixTipiCucina();
 
-        if(ricercaButton!=null){
-            ricercaButton.addActionListener(e->applicaFiltri());
+        if (ricercaButton != null) {
+            ricercaButton.addActionListener(e -> applicaFiltri());
         }
-        if(resetButton!=null){
-            resetButton.addActionListener(e->resetScelte());
+        if (resetButton != null) {
+            resetButton.addActionListener(e -> resetScelte());
         }
 
         pack();
         setLocationRelativeTo(padre);
     }
 
-    public void fixSlider(){
+    public void fixSlider() {
         raggioRicerca.setMinimum(0);
         raggioRicerca.setMaximum(4);
         raggioRicerca.setValue(4);
@@ -66,21 +67,21 @@ public class dialogFiltri extends JDialog {
         raggioRicerca.setLabelTable(indici);
     }
 
-    public void fixBottoni(){
-        ButtonGroup delivery=new ButtonGroup();
+    public void fixBottoni() {
+        ButtonGroup delivery = new ButtonGroup();
         delivery.add(deliveryS);
         delivery.add(deliveryN);
         delivery.add(deliveryI);
         deliveryI.setSelected(true);
 
-        ButtonGroup prenotazioni=new ButtonGroup();
+        ButtonGroup prenotazioni = new ButtonGroup();
         prenotazioni.add(prenotazioneS);
         prenotazioni.add(prenotazioneN);
         prenotazioni.add(prenotazioneI);
         prenotazioneI.setSelected(true);
     }
 
-    public void fixStelle(){
+    public void fixStelle() {
         numeroStelle.addItem("Qualsiasi");
         numeroStelle.addItem(1);
         numeroStelle.addItem(2);
@@ -89,108 +90,110 @@ public class dialogFiltri extends JDialog {
         numeroStelle.addItem(5);
     }
 
-    public void fixTipiCucina(){
+    public void fixTipiCucina() {
         tipiCucina.addItem("Qualsiasi");
-        List<String> risultati=clientTK.inviaRichiesta(new String[]{"TIPI_CUCINA"});
-
-        for(String s:risultati) tipiCucina.addItem(s);
+        List<String> risultati = clientTK.inviaRichiesta(new String[]{"TIPI_CUCINA"});
+        if (risultati != null) {
+            for (String s : risultati) tipiCucina.addItem(s);
+        }
     }
 
-    public void applicaFiltri(){
-        String filtriScelti="";
-        int cont=0; //Contatore per controllare se l'utente non ha modificato nessun parametro dei filti.
-                            // Se arriva a 5 significa che vuole vedere tutti i ristoranti senza filtrarli, quindi non ha senso fare una query e lo facciamo uscire.
+    public void applicaFiltri() {
+        String filtriScelti = "";
+        int cont = 0; // Contatore per controllare se l'utente non ha modificato nessun parametro dei filtri
 
-        switch (raggioRicerca.getValue()){
+        switch (raggioRicerca.getValue()) {
             case 0:
-                filtriScelti="5/"+posUtente+"=";
+                filtriScelti = "5/" + posUtente + "=";
                 break;
             case 1:
-                filtriScelti="10/"+posUtente+"=";
+                filtriScelti = "10/" + posUtente + "=";
                 break;
             case 2:
-                filtriScelti="20/"+posUtente+"=";
+                filtriScelti = "20/" + posUtente + "=";
                 break;
             case 3:
-                filtriScelti="50/"+posUtente+"=";
+                filtriScelti = "50/" + posUtente + "=";
                 break;
             case 4:
-                filtriScelti="Qualsiasi=";
+                filtriScelti = "Qualsiasi=";
                 cont++;
                 break;
         }
 
-        String s1=prezzoMin.getText().trim();
-        String s2=prezzoMax.getText().trim();
-        if(s1.isEmpty() || s2.isEmpty()){
-            JOptionPane.showMessageDialog(
-                    this,
+        String s1 = prezzoMin.getText().trim();
+        String s2 = prezzoMax.getText().trim();
+
+        if (s1.isEmpty() || s2.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
                     "Per favore assicurarsi di non aver lasciato vuoti i campi del prezzo",
                     "Fascia prezzo non valida",
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
-        try{
-            int pMin=Integer.parseInt(s1);
-            int pMax=Integer.parseInt(s2);
 
-            if((pMin<0 || pMin>100) || (pMax<0 || pMax>100)){
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Per favore inserire solo numeri Compresi tra 1 e 100",
+        try {
+            int pMin = Integer.parseInt(s1);
+            int pMax = Integer.parseInt(s2);
+
+            if ((pMin < 0 || pMin > 100) || (pMax < 0 || pMax > 100) || (pMin >= pMax)) {
+                JOptionPane.showMessageDialog(this,
+                        "Per favore inserire solo numeri compresi tra 1 e 100",
                         "Fascia prezzo non valida",
                         JOptionPane.WARNING_MESSAGE);
                 return;
             }
-        }catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(
-                    this,
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this,
                     "Per favore inserire solo numeri nei campi della fascia prezzo",
                     "Fascia prezzo non valida",
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        if(s1.equals("1") && s2.equals("100")){
+        if (s1.equals("1") && s2.equals("100")) {
             cont++;
         }
 
-        if(tipiCucina.getSelectedIndex()==0) cont++;
-        if(deliveryI.isSelected() && prenotazioneI.isSelected()) cont+=2;;
+        if (tipiCucina.getSelectedIndex() == 0) cont++;
+        if (deliveryI.isSelected() && prenotazioneI.isSelected()) cont += 2;
+        if (numeroStelle.getSelectedIndex() == 0) cont++;
 
-        if(numeroStelle.getSelectedIndex()==0){
-            cont++;;
-        }
-
-        if(cont == 6){
+        // Se arriva a 6 significa che vuole vedere tutti i ristoranti senza filtrarli
+        if (cont == 6) {
+            ristorantiFiltrati = clientTK.inviaRichiesta(new String[]{"RISTORANTI", "TUTTI"});
             this.dispose();
             return;
         }
-        filtriScelti+=s1+"/"+s2+"=";
-        filtriScelti+=tipiCucina.getItemAt(tipiCucina.getSelectedIndex())+"=";
-        if(deliveryS.isSelected()){
-            filtriScelti+="true=";
-        }else if(deliveryN.isSelected()){
-            filtriScelti+="false=";
-        }else{
-            filtriScelti+="Qualsiasi=";
-        }
-        if(prenotazioneS.isSelected()){
-            filtriScelti+="true=";
-        }else if(prenotazioneN.isSelected()){
-            filtriScelti+="false=";
-        }else{
-            filtriScelti+="Qualsiasi=";
-        }
-        filtriScelti+=String.valueOf(numeroStelle.getSelectedIndex());
 
-        System.out.println(filtriScelti);
-        ristorantiFiltrati= clientTK.inviaRichiesta(new String[]{"RISTORANTI",filtriScelti,posUtente});
+        filtriScelti += s1 + "/" + s2 + "=";
+        filtriScelti += tipiCucina.getItemAt(tipiCucina.getSelectedIndex()) + "=";
+
+        if (deliveryS.isSelected()) {
+            filtriScelti += "true=";
+        } else if (deliveryN.isSelected()) {
+            filtriScelti += "false=";
+        } else {
+            filtriScelti += "Qualsiasi=";
+        }
+
+        if (prenotazioneS.isSelected()) {
+            filtriScelti += "true=";
+        } else if (prenotazioneN.isSelected()) {
+            filtriScelti += "false=";
+        } else {
+            filtriScelti += "Qualsiasi=";
+        }
+
+        filtriScelti += String.valueOf(numeroStelle.getSelectedIndex());
+
+        System.out.println("Filtri inviati: " + filtriScelti);
+        ristorantiFiltrati = clientTK.inviaRichiesta(new String[]{"RISTORANTI", filtriScelti, posUtente});
 
         this.dispose();
     }
 
-    public void resetScelte(){
+    public void resetScelte() {
         int risposta = JOptionPane.showConfirmDialog(
                 this,
                 "Sei sicuro di voler cancellare i dati inseriti?",
@@ -200,12 +203,13 @@ public class dialogFiltri extends JDialog {
         );
 
         if (risposta == JOptionPane.YES_OPTION) {
-            raggioRicerca.setValue(0);
+            raggioRicerca.setValue(4); // Imposta su "Qualsiasi" di default
             prezzoMin.setText("1");
             prezzoMax.setText("100");
-            deliveryS.setSelected(true);
-            prenotazioneS.setSelected(true);
+            deliveryI.setSelected(true); // Indifferente
+            prenotazioneI.setSelected(true); // Indifferente
             numeroStelle.setSelectedIndex(0);
+            tipiCucina.setSelectedIndex(0);
         }
     }
 

@@ -214,7 +214,7 @@ public class GestoreDatabase {
 
             //AGGIUNGERE IL CONTROLLO PER LA MEDIA DELLE STELLE DELLE RECENSIONI
 
-            if(!tmp[5].equals("Qualsiasi")){
+            if(!tmp[5].equals("Qualsiasi") && !tmp[5].equals("0")){
                 query.append("""
                      AND (
                         SELECT AVG(rec.stelle)
@@ -306,10 +306,85 @@ public class GestoreDatabase {
             throw new RuntimeException(e);
         }
         return ris;
+    }
 
+    // ===================================================================================
+    // METODI PREFERITI
+    // ===================================================================================
 
+    public static String aggiungiPreferito(String user, int ristorante, String urlDB, String userDB, String passDB){
+        String query = "INSERT INTO preferiti(username, ristorante_id)" + "VALUES(?, ?)";
+        try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, user);
+            pstmt.setInt(2, ristorante);
+            pstmt.executeUpdate();
+            return "OK: Ristorante aggiunto ai preferiti!";
+        }catch (SQLException e) {
+            System.err.println("[DB] Errore SQL durante l'aggiunta ai preferiti: " + e.getMessage());
+            return "ERRORE: Problema di comunicazione con il Database.";
+        }
+    }
+
+    public static String rimuoviPreferito(String user, int ristorante, String urlDB, String userDB, String passDB){
+        String query = "DELETE FROM preferiti WHERE ristorante_id = ? AND username = ?";
+        try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(2, user);
+            pstmt.setInt(1, ristorante);
+
+            int righeEliminate = pstmt.executeUpdate();
+
+            return righeEliminate > 0 ? "OK: Recensione eliminata con successo!" : "ERRORE: Impossibile eliminare la recensione.";
+        }catch (SQLException e) {
+            System.err.println("[DB] Errore SQL durante la rimozione dai preferiti: " + e.getMessage());
+            return "ERRORE: Problema di comunicazione con il Database.";
+        }
 
     }
+
+    public static List<Ristorante> visualizzaPreferiti(String username, String urlDB, String userDB, String passDB) {
+        List<Ristorante> lista = new ArrayList<>();
+
+        String query = "SELECT r.* FROM preferiti p " +
+                "JOIN ristorantitheknife r ON p.ristorante_id = r.id " +
+                "WHERE p.username = ?";
+
+        try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, username);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Ristorante r = new Ristorante(
+                            rs.getInt("id"),
+                            rs.getString("nome"),
+                            rs.getString("indirizzo"),
+                            rs.getString("citta"),
+                            rs.getString("nazione"),
+                            rs.getDouble("latitudine"),
+                            rs.getDouble("longitudine"),
+                            rs.getString("fascia_prezzo"),
+                            rs.getBoolean("delivery"),
+                            rs.getBoolean("prenotazione_online"),
+                            rs.getString("tipo_cucina"),
+                            rs.getString("proprietario"));
+                    lista.add(r);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("[DB] Errore SQL durante il recupero dei preferiti: " + e.getMessage());
+        }
+
+        return lista;
+    }
+
+    // ===================================================================================
+    // METODI RECENSIONI
+    // ===================================================================================
 
     public static String aggiungiRecensione(Recensione recensione, String urlDB, String userDB, String passDB) {
         if (recensione.getStelle() < 1 || recensione.getStelle() > 5) {
@@ -529,6 +604,10 @@ public class GestoreDatabase {
         }
     }
 
+    // ===================================================================================
+    // METODI RISTORATORI
+    // ===================================================================================
+
     public static String aggiungiRistorante(Ristorante r, String urlDB, String userDB, String passDB) {
         String query = "INSERT INTO ristorantitheknife (nome, indirizzo, citta, nazione, latitudine, longitudine, fascia_prezzo, delivery, prenotazione_online, tipo_cucina, proprietario) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -541,7 +620,10 @@ public class GestoreDatabase {
             pstmt.setString(4, r.getNazione());
             pstmt.setDouble(5, r.getLatitudine());
             pstmt.setDouble(6, r.getLongitudine());
+
+            // Ripristinato a intero perché il DB richiede un integer!
             pstmt.setInt(7, Integer.parseInt(r.getFasciaPrezzo()));
+
             pstmt.setBoolean(8, r.isDelivery());
             pstmt.setBoolean(9, r.isPrenotazioneOnline());
             pstmt.setString(10, r.getTipoCucina());
@@ -552,13 +634,9 @@ public class GestoreDatabase {
             return "OK: Registrazione ristorante completata con successo!";
 
         } catch (SQLException e) {
-            System.out.println(e.getSQLState());
-            System.out.println(e.getCause());
+            System.err.println("[DB] Errore SQL: " + e.getMessage());
             return "ERRORE: Problema interno del Database.";
         }
-
-
-
     }
 
     public static Utente ricercaUtente(String user, String urlDB, String userDB, String passDB){
@@ -570,7 +648,7 @@ public class GestoreDatabase {
             pstmt.setString(1, user.trim());
 
             ResultSet rs = pstmt.executeQuery();
-            rs.next();
+            if(rs.next()) {
                 u = new Utente(
                         rs.getString("nome"),
                         rs.getString("cognome"),
@@ -579,11 +657,13 @@ public class GestoreDatabase {
                         rs.getDouble("latitudine"),
                         rs.getDouble("longitudine"),
                         rs.getString("ruolo"));
-                        u.tostring();
-                } catch (SQLException e) {
-                    System.err.println("[DB] Errore SQL durante il recupero utente " + e.getMessage());
-                }
-                    return u; }
+                u.tostring();
+            }
+        } catch (SQLException e) {
+            System.err.println("[DB] Errore SQL durante il recupero utente " + e.getMessage());
+        }
+        return u;
+    }
 
     public static List<Ristorante> ricercaProprietario(String proprietario, String urlDB, String userDB, String passDB){
         List<Ristorante> risultati = new ArrayList<>();
@@ -633,7 +713,8 @@ public class GestoreDatabase {
 
         }catch (SQLException e) {
             System.err.println("[DB] Errore SQL durante elimazione ristorante: " + e.getMessage());
-            return 0;}
+            return 0;
+        }
 
     }
 
@@ -645,7 +726,7 @@ public class GestoreDatabase {
             pstmt.setLong(1,id);
             ResultSet rs=pstmt.executeQuery();
 
-            while(rs.next()){
+            if(rs.next()){
                 Ristorante risultato=new Ristorante(
                         rs.getInt("id"),
                         rs.getString("nome"),
@@ -667,10 +748,5 @@ public class GestoreDatabase {
         }
 
         return null;
-
-
-
-
     }
 }
-

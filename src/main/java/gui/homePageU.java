@@ -14,29 +14,32 @@ import com.mycompany.theknife.clientTK;
 import modelli.Ristorante;
 import modelli.Utente;
 
-public class homePageU extends JFrame{
+public class homePageU extends JFrame {
 
     private JPanel mainPanel;
     private JLabel labelUsername;
     private JTable tabellaRistoranti;
     private JButton bottoneFiltri;
     private JButton eliminaButton;
-    private String posizioneUtente; //La stringa è salvata come latitudine/longitudine
+    private String posizioneUtente;
     private static String username;
     private Utente u;
 
-    public homePageU(String nomeUtente,String pos){
+    public homePageU(String nomeUtente, String pos) {
         if (mainPanel == null) {
             throw new IllegalStateException("Il mainPanel non è stato associato correttamente nel file homePageU.form");
         }
 
-        this.posizioneUtente=pos;
+        this.posizioneUtente = pos;
         setContentPane(mainPanel);
         username = nomeUtente;
-        if(username!= null) u = clientTK.inviaRichiesta( new String[]{"GET_UTENTE", username});
 
-        String[] colonne={"Id Ristorante","Nome","Indirizzo","Città","Nazione","Latitudine","Longitudine","Fascia prezzo","Delivery","Prenotazioni Online","Tipo di cucina"};
-        tabellaRistoranti.setModel(new DefaultTableModel(colonne,0){
+        if (username != null) {
+            u = clientTK.inviaRichiesta(new String[]{"GET_UTENTE", username});
+        }
+
+        String[] colonne = {"Id Ristorante", "Nome", "Indirizzo", "Città", "Nazione", "Latitudine", "Longitudine", "Fascia prezzo", "Delivery", "Prenotazioni Online", "Tipo di cucina"};
+        tabellaRistoranti.setModel(new DefaultTableModel(colonne, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -45,18 +48,17 @@ public class homePageU extends JFrame{
         tabellaRistoranti.getTableHeader().setReorderingAllowed(false);
         tabellaRistoranti.getTableHeader().setResizingAllowed(false);
 
-        riempiTabella(tabellaRistoranti,new String[]{"RISTORANTI","TUTTI"});
+        riempiTabella(tabellaRistoranti, new String[]{"RISTORANTI", "TUTTI"});
 
         tabellaRistoranti.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) { // Rileva il doppio click
+                if (e.getClickCount() == 2) {
                     int row = tabellaRistoranti.getSelectedRow();
                     if (row != -1) {
                         int idRistorante = ((Number) tabellaRistoranti.getValueAt(row, 0)).intValue();
                         String nomeRistorante = (String) tabellaRistoranti.getValueAt(row, 1);
 
-                        // Apre il JDialog recensioniClient passandogli i dati del ristorante selezionato
                         recensioniClient dialog = new recensioniClient(
                                 homePageU.this,
                                 idRistorante,
@@ -69,9 +71,9 @@ public class homePageU extends JFrame{
             }
         });
 
-        if(nomeUtente==null){
+        if (nomeUtente == null) {
             labelUsername.setVisible(false);
-        }else{
+        } else {
             labelUsername.setText(nomeUtente);
             labelUsername.addMouseListener(new MouseAdapter() {
                 @Override
@@ -87,27 +89,24 @@ public class homePageU extends JFrame{
                 }
             });
 
-            JPopupMenu menuTendina=creaMenu(this, nomeUtente);
+            JPopupMenu menuTendina = creaMenu(this, nomeUtente);
             labelUsername.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    menuTendina.show(labelUsername,0,labelUsername.getHeight());
+                    menuTendina.show(labelUsername, 0, labelUsername.getHeight());
                 }
             });
-
         }
-
-
 
         bottoneFiltri.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                dialogFiltri dF=new dialogFiltri(homePageU.this,posizioneUtente);
+                dialogFiltri dF = new dialogFiltri(homePageU.this, posizioneUtente);
                 dF.setVisible(true);
 
-                List<Ristorante> listaR=dF.getRistorantiFiltrati();
-                if(listaR!=null){
-                    applicaFiltri(tabellaRistoranti,listaR);
+                List<Ristorante> listaR = dF.getRistorantiFiltrati();
+                if (listaR != null) {
+                    applicaFiltri(tabellaRistoranti, listaR);
                 }
             }
         });
@@ -115,89 +114,73 @@ public class homePageU extends JFrame{
         pack();
         setLocationRelativeTo(null);
 
-        if(!u.getRuolo().equals("Ristoratore")){
-            eliminaButton.setVisible(false);
+        if (u == null || !u.getRuolo().equals("Ristoratore")) {
+            if (eliminaButton != null) {
+                eliminaButton.setVisible(false);
+            }
         }
 
-        eliminaButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                EliminaRistorante er= new EliminaRistorante(username);
-                er.setVisible(true);
-            }
-        });
-
+        if (eliminaButton != null) {
+            eliminaButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    // Passiamo la Home al form di eliminazione
+                    EliminaRistorante er = new EliminaRistorante(username, homePageU.this);
+                    er.setVisible(true);
+                }
+            });
+        }
     }
 
-    public JPopupMenu creaMenu(JFrame parent, String nomeUtente){
+    public JPopupMenu creaMenu(JFrame parent, String nomeUtente) {
+        JPopupMenu menuTendina = new JPopupMenu();
+        JMenuItem preferiti = new JMenuItem("I miei ristoranti preferiti");
+        JMenuItem recensioni = new JMenuItem("Le mie recensioni");
+        JMenuItem logout = new JMenuItem("Logout");
 
-        JPopupMenu menuTendina=new JPopupMenu();
-        JMenuItem preferiti=new JMenuItem("I miei ristoranti preferiti");
-        JMenuItem recensioni=new JMenuItem("Le mie recensioni");
-        JMenuItem logout=new JMenuItem("Logout");
-
-        preferiti.addActionListener(e->{
-            System.out.println("PREFERITI");
+        preferiti.addActionListener(e -> {
+            MieiPreferiti dialog = new MieiPreferiti(parent, nomeUtente);
+            dialog.setVisible(true);
         });
-        recensioni.addActionListener(e->{
+
+        recensioni.addActionListener(e -> {
             MieRecensioni dialog = new MieRecensioni(parent, nomeUtente);
             dialog.setVisible(true);
         });
-        logout.addActionListener(e->{
+
+        logout.addActionListener(e -> {
             System.out.println("LOGOUT");
+            // Se vuoi, qui potresti fare this.dispose() e riaprire new Home().setVisible(true)
         });
+
         menuTendina.add(preferiti);
         menuTendina.add(recensioni);
 
-
-        if(u != null && u.getRuolo().equals("Ristoratore") ){
-
+        if (u != null && u.getRuolo().equals("Ristoratore")) {
             JMenuItem aggiungi = new JMenuItem("Aggiungi ristorante");
-            JMenuItem ristoranti =new JMenuItem("I miei ristoranti");
+            JMenuItem ristoranti = new JMenuItem("I miei ristoranti");
 
             ristoranti.addActionListener(e -> {
-            proprietario(username);
+                proprietario(username);
             });
             aggiungi.addActionListener(e -> {
                 inserisci();
             });
             menuTendina.add(aggiungi);
-            menuTendina.add(ristoranti);}
-        menuTendina.add(logout);
+            menuTendina.add(ristoranti);
+        }
 
+        menuTendina.add(logout);
         return menuTendina;
     }
 
-    public static void riempiTabella(JTable table,String[] richiesta){
-        DefaultTableModel dtm=(DefaultTableModel) table.getModel();
+    public static void riempiTabella(JTable table, String[] richiesta) {
+        DefaultTableModel dtm = (DefaultTableModel) table.getModel();
         dtm.setRowCount(0);
 
-        //String[] richiesta={"RISTORANTI","TUTTI"};
-        List<Ristorante> ristoranti=clientTK.inviaRichiesta(richiesta);
+        List<Ristorante> ristoranti = clientTK.inviaRichiesta(richiesta);
 
-        for(Ristorante r:ristoranti){
-            dtm.addRow(new Object[]{
-                    r.getId(),
-                    r.getNome(),
-                    r.getIndirizzo(),
-                    r.getCitta(),
-                    r.getNazione(),
-                    r.getLatitudine(),
-                    r.getLongitudine(),
-                    r.getFasciaPrezzo(),
-                    r.isDelivery(),
-                    r.isPrenotazioneOnline(),
-                    r.getTipoCucina()
-            });
-        }
-
-    }
-
-    public static void applicaFiltri(JTable table,List<Ristorante> ristoranti){
-        DefaultTableModel dtm=(DefaultTableModel) table.getModel();
-        dtm.setRowCount(0);
-
-        for(Ristorante r:ristoranti){
+        for (Ristorante r : ristoranti) {
             dtm.addRow(new Object[]{
                     r.getId(),
                     r.getNome(),
@@ -214,17 +197,41 @@ public class homePageU extends JFrame{
         }
     }
 
-    private void proprietario(String username){
-        List<Ristorante> list = clientTK.inviaRichiesta(new String[]{"PROPRIETARIO",username});
-        if(list==null)list = new ArrayList<>();
-       applicaFiltri(tabellaRistoranti,list);
+    public static void applicaFiltri(JTable table, List<Ristorante> ristoranti) {
+        DefaultTableModel dtm = (DefaultTableModel) table.getModel();
+        dtm.setRowCount(0);
+
+        for (Ristorante r : ristoranti) {
+            dtm.addRow(new Object[]{
+                    r.getId(),
+                    r.getNome(),
+                    r.getIndirizzo(),
+                    r.getCitta(),
+                    r.getNazione(),
+                    r.getLatitudine(),
+                    r.getLongitudine(),
+                    r.getFasciaPrezzo(),
+                    r.isDelivery(),
+                    r.isPrenotazioneOnline(),
+                    r.getTipoCucina()
+            });
+        }
     }
 
-    private void inserisci(){
-        AddRistorante addr =new AddRistorante(username);
+    private void proprietario(String username) {
+        List<Ristorante> list = clientTK.inviaRichiesta(new String[]{"PROPRIETARIO", username});
+        if (list == null) list = new ArrayList<>();
+        applicaFiltri(tabellaRistoranti, list);
+    }
+
+    private void inserisci() {
+        // Passiamo la Home al form di aggiunta
+        AddRistorante addr = new AddRistorante(username, homePageU.this);
         addr.setVisible(true);
-        addr.setLocationRelativeTo(null);
+    }
 
+    // Metodo PUBBLICO per far riaggiornare la tabella dall'esterno
+    public void aggiornaVistaProprietario() {
+        proprietario(username);
     }
 }
-

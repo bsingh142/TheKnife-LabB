@@ -8,7 +8,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 public class AddRistorante extends JFrame {
-
     private String username;
     private JPanel mainPanel;
     private JButton finalizzaButton;
@@ -24,30 +23,25 @@ public class AddRistorante extends JFrame {
     private JComboBox<Boolean> comboprenotazione;
     private JTextField txttipocucina;
 
-    public AddRistorante(String u) {
-        username=u;
+    private homePageU homeParent; // Riferimento alla Home
+
+    public AddRistorante(String u, homePageU parent) {
+        this.username = u;
+        this.homeParent = parent;
+
         if (mainPanel == null) {
             throw new IllegalStateException("Il mainPanel non è stato associato correttamente");
         }
-
         setContentPane(mainPanel);
         setTitle("Registrazione nuovo ristorante - TheKnife");
-        //la chiusura della pagina dalla X non viene gestita autonomamente, ma viene gestita dall'WindowAdapter
-        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-        // Intercettiamo il click sulla "X" in alto a destra
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                tornaAllaHome();
-            }
-        });
+        // Alla chiusura della X, eliminiamo semplicemente questa finestra
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         if (combodelivery != null && combodelivery.getItemCount() == 0) {
             combodelivery.addItem(true);
             combodelivery.addItem(false);
         }
-
         if (comboprenotazione!= null && comboprenotazione.getItemCount() == 0) {
             comboprenotazione.addItem(true);
             comboprenotazione.addItem(false);
@@ -57,7 +51,7 @@ public class AddRistorante extends JFrame {
         resetButton.addActionListener(a -> pulisciCampi());
 
         pack();
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(parent);
     }
 
     private void pulisciCampi() {
@@ -68,15 +62,11 @@ public class AddRistorante extends JFrame {
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE
         );
-
         if (risposta == JOptionPane.YES_OPTION) {
             svuotaInterfaccia();
         }
     }
 
-    /**
-     * Metodo di supporto per ripulire le caselle di testo.
-     */
     private void svuotaInterfaccia() {
         txtNome.setText("");
         txtindirizzo.setText("");
@@ -94,49 +84,53 @@ public class AddRistorante extends JFrame {
     }
 
     private void gestisciAggiunta() {
-        // 1. Estrazione dei valori
         String nome = txtNome.getText().trim();
         String indirizzo = txtindirizzo.getText().trim();
         String citta = txtcitta.getText().trim();
         String nazione = txtnazione.getText().trim();
-        String lat = latitudine.getText().trim();
-        String lon = longitudine.getText().trim();
+
+        String lat = latitudine.getText().trim().replace(",", ".");
+        String lon = longitudine.getText().trim().replace(",", ".");
+
         String prezzo = fasciaprezzo.getText().trim();
         boolean del = (boolean) combodelivery.getSelectedItem();
         boolean prenot = (boolean)  comboprenotazione.getSelectedItem();
         String tipocucina = txttipocucina.getText().trim();
 
-
-
-        // Controllo: Campi obbligatori
         if (nome.isEmpty() || indirizzo.isEmpty() || citta.isEmpty() ||
                 nazione.isEmpty() || tipocucina.isEmpty() || lat.isEmpty() || lon.isEmpty() || prezzo.isEmpty()){
             JOptionPane.showMessageDialog(this, "Compilare tutti i campi.", "Attenzione", JOptionPane.WARNING_MESSAGE);
-            return; // Blocca l'esecuzione
+            return;
         }
 
-        // Creazione del pacchetto Ristorante
-        Ristorante nuovoRistorante = new Ristorante(nome, indirizzo, citta, nazione, lat, lon, prezzo, del, prenot, tipocucina, username);
+        try {
+            Integer.parseInt(prezzo);
+            double latVal = Double.parseDouble(lat);
+            double lonVal = Double.parseDouble(lon);
 
-        // INVIO AL SERVER TRAMITE IL GESTORE CENTRALIZZATO
-        String messaggioServer = clientTK.inviaRichiesta(nuovoRistorante);
+            if (latVal < -90 || latVal > 90 || lonVal < -180 || lonVal > 180) {
+                JOptionPane.showMessageDialog(this, "Coordinate non valide!\nLa latitudine deve essere tra -90 e 90.\nLa longitudine tra -180 e 180.", "Errore Coordinate", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
 
-        // Gestione della risposta
-        if (messaggioServer.startsWith("OK")) {
-            JOptionPane.showMessageDialog(this, messaggioServer, "Esito Inserimento ristorante", JOptionPane.INFORMATION_MESSAGE);
-            svuotaInterfaccia(); // Pulisce i campi in automatico
-            new homePageU(username,latitudine.getText()+"/"+longitudine.getText()).setVisible(true);
-            this.dispose();
-        } else {
-            // Mostra l'errore (ad esempio se lo username esiste già, errore generato dal database!)
-            JOptionPane.showMessageDialog(this, messaggioServer, "Avviso Server", JOptionPane.ERROR_MESSAGE);
+            Ristorante nuovoRistorante = new Ristorante(nome, indirizzo, citta, nazione, lat, lon, prezzo, del, prenot, tipocucina, username);
+            String messaggioServer = clientTK.inviaRichiesta(nuovoRistorante);
+
+            if (messaggioServer != null && messaggioServer.startsWith("OK")) {
+                JOptionPane.showMessageDialog(this, messaggioServer, "Esito Inserimento ristorante", JOptionPane.INFORMATION_MESSAGE);
+
+                // AGGIORNIAMO LA HOME PAGE ATTUALE E CHIUDIAMO LA SCHERMATA
+                if(homeParent != null) {
+                    homeParent.aggiornaVistaProprietario();
+                }
+                this.dispose();
+
+            } else {
+                String errore = (messaggioServer != null) ? messaggioServer : "ERRORE: Impossibile contattare il server.";
+                JOptionPane.showMessageDialog(this, errore, "Avviso Server", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Errore: Inserisci solo valori numerici per Latitudine, Longitudine e Fascia Prezzo.", "Errore Formato", JOptionPane.ERROR_MESSAGE);
         }
     }
-
-    //Chiude la finestra corrente e riapre il menu principale (Home)
-    private void tornaAllaHome() {
-        new homePageU(username,"");
-        this.dispose();
-    }
-
 }

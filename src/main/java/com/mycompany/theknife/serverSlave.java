@@ -1,6 +1,6 @@
 package com.mycompany.theknife;
 
-import database.GestoreDatabase; // Assicurati che il package sia corretto!
+import database.GestoreDatabase;
 import modelli.Recensione;
 import modelli.Ristorante;
 import modelli.Utente;
@@ -52,22 +52,23 @@ public class serverSlave extends Thread {
             // Legge il pacchetto in arrivo dal Client
             Object oggettoRicevuto = input.readObject();
 
-            // 1. Controllo per la Registrazione (che invia un oggetto Utente)
+            // 1. Controllo per la Registrazione
             if (oggettoRicevuto instanceof Utente) {
                 gestisciRegistrazione((Utente) oggettoRicevuto);
             }
-            // 2. Controllo per l'Inserimento Recensione (invia un oggetto Recensione)
+            // 2. Controllo per l'Inserimento Recensione
             else if (oggettoRicevuto instanceof Recensione) {
-                gestisciAggiungiRecensione((Recensione) oggettoRicevuto);}
-            // 2. Controllo per il Login e comandi futuri (che inviano un Array di Stringhe)
+                gestisciAggiungiRecensione((Recensione) oggettoRicevuto);
+            }
+            // 3. Controllo per l'Inserimento Ristorante
             else if (oggettoRicevuto instanceof Ristorante) {
-                gestisciAggiungiRistorante((Ristorante) oggettoRicevuto);}
+                gestisciAggiungiRistorante((Ristorante) oggettoRicevuto);
+            }
+            // 4. Controllo per i comandi testuali
             else if (oggettoRicevuto instanceof String[]) {
                 String[] pacchetto = (String[]) oggettoRicevuto;
-                String comando = pacchetto[0]; // La prima parola è il comando
+                String comando = pacchetto[0];
 
-
-                // Il tuo SWITCH per gestire le varie funzionalità dell'app
                 switch (comando) {
                     case "LOGIN":
                         gestisciLogin(pacchetto);
@@ -103,6 +104,17 @@ public class serverSlave extends Thread {
                     case "MODIFICA_RECENSIONE":
                         gestisciModificaRecensione(pacchetto);
                         break;
+                    // -- Funzionalità Preferiti --
+                    case "AGGIUNGI_PREFERITO":
+                        gestisciAggiungiPreferito(pacchetto);
+                        break;
+                    case "RIMUOVI_PREFERITO":
+                        gestisciRimuoviPreferito(pacchetto);
+                        break;
+                    case "GET_PREFERITI":
+                        gestisciGetPreferiti(pacchetto);
+                        break;
+                    // -- Funzionalità Ristoratori --
                     case "GET_UTENTE":
                         gestisciGetUtente(pacchetto);
                         break;
@@ -115,9 +127,6 @@ public class serverSlave extends Thread {
                     case "RICERCA_ID":
                         gestisciRicercaId(pacchetto);
                         break;
-
-
-
                     default:
                         System.out.println("[SLAVE " + getId() + "] Comando sconosciuto: " + comando);
                         output.writeObject("ERRORE: Comando non riconosciuto dal Server.");
@@ -135,59 +144,40 @@ public class serverSlave extends Thread {
         }
     }
 
-    /**
-     * Gestisce la logica di Registrazione.
-     */
     private void gestisciRegistrazione(Utente utente) throws IOException {
         System.out.println("[SLAVE " + getId() + "] Richiesta di REGISTRAZIONE per: " + utente.getUsername());
-
-        // Il GestoreDatabase ora ci restituisce direttamente la frase da inviare al Client
         String risposta = GestoreDatabase.registraUtente(utente, urlDB, userDB, passDB);
-
         output.writeObject(risposta);
         output.flush();
     }
 
-    /**
-     * Gestisce la logica di Login.
-     */
     private void gestisciLogin(String[] pacchetto) throws IOException {
         String username = pacchetto[1];
         String password = pacchetto[2];
-
         System.out.println("[SLAVE " + getId() + "] Richiesta di LOGIN per: " + username);
-
-        // Il GestoreDatabase valuta l'errore specifico (utente inesistente o password errata)
         String risposta = GestoreDatabase.verificaLogin(username, password, urlDB, userDB, passDB);
-
         output.writeObject(risposta);
         output.flush();
     }
 
     private void gestisciRistoranti(String richiesta,String posU) throws IOException {
         List<Ristorante> risultati=GestoreDatabase.ricercaRistoranti(richiesta,posU, urlDB,userDB,passDB);
-
         output.writeObject(risultati);
         output.flush();
     }
 
     private void gestisciPosizione(String[] pacchetto) throws IOException {
         String risp=GestoreDatabase.ricercaPosizione(pacchetto[1],pacchetto[2]);
-
         output.writeObject(risp);
         output.flush();
     }
 
     private void gestisciTipiCucina() throws IOException {
         List<String> ris=GestoreDatabase.ricercaTipiCucina(urlDB,userDB,passDB);
-
         output.writeObject(ris);
         output.flush();
     }
 
-    /**
-     * Chiude i flussi e il socket in modo sicuro.
-     */
     private void chiudiRisorse() {
         try {
             if (input != null) input.close();
@@ -253,12 +243,37 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
+    // -- Metodi Gestione Preferiti --
+    private void gestisciAggiungiPreferito(String[] pacchetto) throws IOException {
+        String autore = pacchetto[1];
+        int idRistorante = Integer.parseInt(pacchetto[2]);
+        String esito = GestoreDatabase.aggiungiPreferito(autore, idRistorante, urlDB, userDB, passDB);
+        output.writeObject(esito);
+        output.flush();
+    }
+
+    private void gestisciRimuoviPreferito(String[] pacchetto) throws IOException{
+        String autore = pacchetto[1];
+        int idRistorante = Integer.parseInt(pacchetto[2]);
+        String esito = GestoreDatabase.rimuoviPreferito(autore, idRistorante, urlDB, userDB, passDB);
+        output.writeObject(esito);
+        output.flush();
+    }
+
+    private void gestisciGetPreferiti(String[] pacchetto) throws IOException {
+        String username = pacchetto[1];
+        List<Ristorante> lista = GestoreDatabase.visualizzaPreferiti(username, urlDB, userDB, passDB);
+        output.writeObject(lista);
+        output.flush();
+    }
+
+    // -- Metodi Gestione Ristoratori --
     private void gestisciGetUtente(String[] pacchetto) throws IOException{
         String username = pacchetto[1];
         Utente u = GestoreDatabase.ricercaUtente(username, urlDB, userDB, passDB);
         output.writeObject(u);
         output.flush();
-        }
+    }
 
     private void gestisciAggiungiRistorante(Ristorante pacchetto) throws IOException {
         String risposta=GestoreDatabase.aggiungiRistorante(pacchetto, urlDB, userDB, passDB);
@@ -266,21 +281,21 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
-    private void gestisciRicercaProprietario(String[] pacchetto)throws IOException{
+    private void gestisciRicercaProprietario(String[] pacchetto) throws IOException{
         String username = pacchetto[1];
         List<Ristorante> r= GestoreDatabase.ricercaProprietario(username, urlDB, userDB, passDB);
         output.writeObject(r);
         output.flush();
     }
 
-    private void gestisciEliminaRistorante(String[] pacchetto)throws IOException{
-        Integer i= GestoreDatabase.eliminaRistorante(pacchetto[1], Long.parseLong(pacchetto[2]), urlDB, userDB, passDB);
+    private void gestisciEliminaRistorante(String[] pacchetto) throws IOException{
+        Integer i = GestoreDatabase.eliminaRistorante(pacchetto[1], Long.parseLong(pacchetto[2]), urlDB, userDB, passDB);
         output.writeObject(i);
         output.flush();
     }
 
-    private void gestisciRicercaId(String[] pacchetto)throws IOException{
-        Ristorante i= GestoreDatabase.idRistorante(Long.parseLong(pacchetto[1]), urlDB, userDB, passDB);
+    private void gestisciRicercaId(String[] pacchetto) throws IOException{
+        Ristorante i = GestoreDatabase.idRistorante(Long.parseLong(pacchetto[1]), urlDB, userDB, passDB);
         output.writeObject(i);
         output.flush();
     }
