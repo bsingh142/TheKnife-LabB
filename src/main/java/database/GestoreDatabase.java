@@ -320,7 +320,7 @@ public class GestoreDatabase {
             pstmt.setString(1, user);
             pstmt.setInt(2, ristorante);
             pstmt.executeUpdate();
-            return "OK: Ristorante aggiunto ai preferiti!";
+            return "Ristorante aggiunto ai preferiti!";
         }catch (SQLException e) {
             System.err.println("[DB] Errore SQL durante l'aggiunta ai preferiti: " + e.getMessage());
             return "ERRORE: Problema di comunicazione con il Database.";
@@ -337,7 +337,7 @@ public class GestoreDatabase {
 
             int righeEliminate = pstmt.executeUpdate();
 
-            return righeEliminate > 0 ? "OK: Recensione eliminata con successo!" : "ERRORE: Impossibile eliminare la recensione.";
+            return righeEliminate > 0 ? "Ristorante rimosso dai preferiti con successo!" : "ERRORE: Impossibile eliminare il ritorante dai preferiti.";
         }catch (SQLException e) {
             System.err.println("[DB] Errore SQL durante la rimozione dai preferiti: " + e.getMessage());
             return "ERRORE: Problema di comunicazione con il Database.";

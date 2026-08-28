@@ -99,8 +99,8 @@
           </component>
           <component id="103b3" class="javax.swing.JComboBox" binding="comboStelle">
             <constraints>
-              <grid row="0" column="2" row-span="1" col-span="3" vsize-policy="0" hsize-policy="2" anchor="4" fill="0" indent="0" use-parent-layout="false">
-                <preferred-size width="3" height="1"/>
+              <grid row="0" column="2" row-span="1" col-span="3" vsize-policy="0" hsize-policy="2" anchor="0" fill="0" indent="0" use-parent-layout="false">
+                <preferred-size width="2" height="1"/>
               </grid>
             </constraints>
             <properties/>

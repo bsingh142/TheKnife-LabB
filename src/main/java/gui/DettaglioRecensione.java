@@ -17,7 +17,7 @@ public class DettaglioRecensione extends JDialog {
     private final String nomeUtente;
 
     public DettaglioRecensione(JFrame parent, Recensione recensione, String nomeUtente) {
-        super(parent, "Dettaglio Recensione", true);
+        super(parent, "Modifica recensione", true);
         this.recensione = recensione;
         this.nomeUtente = nomeUtente;
 

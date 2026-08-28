@@ -14,7 +14,7 @@ public class MieRecensioni extends JDialog {
     private final String nomeUtente;
 
     public MieRecensioni(JFrame parent, String nomeUtente) {
-        super(parent, "Le mie recensioni", true);
+        super(parent, "Recensioni", true);
         this.nomeUtente = nomeUtente;
 
         if (Lista == null) {

@@ -13,7 +13,7 @@ public class DettaglioPreferiti extends JDialog{
     private final String nomeUtente;
 
     public DettaglioPreferiti(JDialog parent, int idRistorante, String nomeRistorante, String nomeUtente) {
-        super(parent, "Dettaglio Preferito", true);
+        super(parent, "Elimina ristorante preferito", true);
         this.idRistorante = idRistorante;
         this.nomeUtente = nomeUtente;
 
@@ -36,7 +36,7 @@ public class DettaglioPreferiti extends JDialog{
         String[] pacchetto = {"RIMUOVI_PREFERITO", nomeUtente, String.valueOf(idRistorante)};
         String risposta = clientTK.inviaRichiesta(pacchetto);
 
-        if (risposta != null && risposta.startsWith("OK")) {
+        if (risposta != null) {
             JOptionPane.showMessageDialog(this, risposta, "Esito", JOptionPane.INFORMATION_MESSAGE);
             dispose();
         } else {

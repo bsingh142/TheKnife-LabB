@@ -17,7 +17,7 @@ public class MieiPreferiti extends JDialog {
     private final String nomeUtente;
 
     public MieiPreferiti(JFrame parent, String nomeUtente) {
-        super(parent, "I miei preferiti", true);
+        super(parent, "Ristoranti preferiti", true);
         this.nomeUtente = nomeUtente;
 
         if (panel1 == null) {

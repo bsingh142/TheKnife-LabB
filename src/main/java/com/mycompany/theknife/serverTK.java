@@ -43,6 +43,7 @@ public class serverTK {
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
+
         }
 
     private static boolean accessoDB() {
