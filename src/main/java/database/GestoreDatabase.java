@@ -779,4 +779,28 @@ public class GestoreDatabase {
 
         return null;
     }
+
+    public static String getInfoRistorante(int idR,String urlDB, String userDB, String passDB){
+        String ris="";
+        String query= """
+                SELECT COUNT(*) as numero_recensioni,
+                ROUND(AVG(stelle), 2) as media_recensioni
+                FROM recensioni
+                WHERE ristorante_id = ?
+                """;
+        try(Connection conn=DriverManager.getConnection(urlDB,userDB,passDB);
+            PreparedStatement pstmt=conn.prepareStatement(query)){
+
+            pstmt.setInt(1, idR);
+
+            ResultSet rs=pstmt.executeQuery();
+            if(rs.next()){
+                ris= "Valutazione media: " + rs.getDouble("media_recensioni") + " con " + rs.getInt("numero_recensioni") + " recensioni";
+            }
+        }catch (SQLException e) {
+            System.err.println("[DB] Errore SQL durante elimazione ristorante: " + e.getMessage());
+
+        }
+        return ris;
+    }
 }

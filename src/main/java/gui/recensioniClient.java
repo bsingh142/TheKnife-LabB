@@ -125,11 +125,20 @@ public class recensioniClient extends JDialog {
             }
         }
 
-        if (!isProprietario) {
+        /*if (!isProprietario) {
             if (mediaRecensioni != null) mediaRecensioni.setVisible(false);
             if (Media != null) Media.setVisible(false);
             if (recensioniTotali != null) recensioniTotali.setVisible(false);
             if (Tot != null) Tot.setVisible(false);
+        }*/
+        if(isProprietario){
+            String info=getInfoRistorante(idRistorante);
+            String testo= String.format(
+                    "<html>%s<br>%s</html>",
+                    nomeRistoranteText,
+                    info
+            );
+            NomeRistorante.setText(testo);
         }
 
         caricaRecensioni();
@@ -317,5 +326,9 @@ public class recensioniClient extends JDialog {
                 JOptionPane.showMessageDialog(this, risposta, "Errore", JOptionPane.ERROR_MESSAGE);
             }
         }
+    }
+
+    private String getInfoRistorante(int id){
+        return clientTK.inviaRichiesta(new String[]{"INFO_RISTORANTE",String.valueOf(idRistorante)});
     }
 }

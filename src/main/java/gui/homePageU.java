@@ -82,7 +82,7 @@ public class homePageU extends JFrame {
         tabellaRistoranti.setGridColor(new Color(225, 230, 235));
         tabellaRistoranti.setShowGrid(true);
 
-        if(u.getRuolo().equals("Ristoratore")){
+        if(username!=null && u.getRuolo().equals("Ristoratore")){
             riempiTabella(tabellaRistoranti,new String[]{"PROPRIETARIO",u.getUsername()});
             bottoneFiltri.setVisible(false);
             buttonReset.setText("Aggiungi ristorante");

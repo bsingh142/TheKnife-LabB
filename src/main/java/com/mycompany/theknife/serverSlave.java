@@ -130,6 +130,9 @@ public class serverSlave extends Thread {
                     case "RICERCA_ID":
                         gestisciRicercaId(pacchetto);
                         break;
+                    case "INFO_RISTORANTE":
+                        getInfoRistorante(pacchetto);
+                        break;
                     default:
                         System.out.println("[SLAVE " + getId() + "] Comando sconosciuto: " + comando);
                         output.writeObject("ERRORE: Comando non riconosciuto dal Server.");
@@ -307,6 +310,13 @@ public class serverSlave extends Thread {
     private void gestisciRicercaId(String[] pacchetto) throws IOException{
         Ristorante i = GestoreDatabase.idRistorante(Long.parseLong(pacchetto[1]), urlDB, userDB, passDB);
         output.writeObject(i);
+        output.flush();
+    }
+
+    private void getInfoRistorante(String[] pacchetto) throws IOException {
+        String risp=GestoreDatabase.getInfoRistorante(Integer.parseInt(pacchetto[1]),urlDB, userDB, passDB);
+
+        output.writeObject(risp);
         output.flush();
     }
 }
