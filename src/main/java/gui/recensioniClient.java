@@ -31,6 +31,7 @@ public class recensioniClient extends JDialog {
     private final int idRistorante;
     private final String nomeUtente;
     private boolean isProprietario = false;
+    private boolean isPreferito = false;
 
     public recensioniClient(JFrame parent, int idRistorante, String nomeRistoranteText, String nomeUtente) {
         super(parent, "Recensioni - " + nomeRistoranteText, true);
@@ -57,27 +58,30 @@ public class recensioniClient extends JDialog {
         // Imposta il layout verticale per il pannello interno dello ScrollPane
         ListaRecensioni.setLayout(new BoxLayout(ListaRecensioni, BoxLayout.Y_AXIS));
 
-        // Gestione visibilità form per utente Guest
-// Gestione visibilità form per utente Guest e Ristoratore
+        // --- CONTROLLO RUOLI E VISIBILITÀ ---
         if (nomeUtente == null) {
-            VistaLog.setVisible(false); // Nasconde l'intero pannello di inserimento se non loggato
+            // Utente Guest: nasconde sia l'inserimento recensione che i preferiti
+            VistaLog.setVisible(false);
             if (PreferitiButton != null) PreferitiButton.setVisible(false);
         } else {
-            // L'utente è loggato: chiediamo al server i suoi dettagli per scoprire il ruolo
+            // Utente Loggato: verifichiamo il ruolo
             modelli.Utente u = clientTK.inviaRichiesta(new String[]{"GET_UTENTE", nomeUtente});
 
-            // SE È UN RISTORATORE, BLOCCHIAMO RECENSIONI E PREFERITI
             if (u != null && u.getRuolo().equals("Ristoratore")) {
+                // Il Ristoratore non può recensire né gestire i preferiti
                 VistaLog.setVisible(false);
                 if (PreferitiButton != null) PreferitiButton.setVisible(false);
             } else {
-                // SE È UN CLIENTE NORMALE, ABILITIAMO I BOTTONI
+                // SE È UN CLIENTE NORMALE: colleghiamo i listener e controlliamo lo stato preferiti
                 if (ButtonInvio != null) ButtonInvio.addActionListener(e -> inviaRecensione());
-                if (PreferitiButton != null) PreferitiButton.addActionListener(e -> aggiungiPreferito());
+                if (PreferitiButton != null) {
+                    controllaStatoPreferito();
+                    PreferitiButton.addActionListener(e -> gestisciPreferito());
+                }
             }
         }
 
-        // SOLO IL RISTORATORE PUÒ VEDERE LA MEDIA E RISPONDERE
+        // SOLO IL RISTORATORE PROPRIETARIO PUÒ VEDERE LE STATISTICHE
         if (nomeUtente != null) {
             Ristorante ristorante = clientTK.inviaRichiesta(new String[]{"RICERCA_ID", String.valueOf(idRistorante)});
             if (ristorante != null && nomeUtente.equals(ristorante.getProprietario())) {
@@ -244,6 +248,49 @@ public class recensioniClient extends JDialog {
             }
             clientTK.inviaRichiesta(new String[]{"RISPONDI_RECENSIONE", String.valueOf(recensione.getIdRecensione()), risposta});
             caricaRecensioni(); // Ricarica le recensioni per visualizzare subito la risposta
+        }
+    }
+    private void controllaStatoPreferito() {
+        List<Ristorante> preferiti = clientTK.inviaRichiesta(new String[]{"GET_PREFERITI", nomeUtente});
+        isPreferito = false;
+        if (preferiti != null) {
+            for (Ristorante r : preferiti) {
+                if (r.getId() == idRistorante) {
+                    isPreferito = true;
+                    break;
+                }
+            }
+        }
+        aggiornaTestoBottonePreferiti();
+    }
+
+    private void aggiornaTestoBottonePreferiti() {
+        if (PreferitiButton != null) {
+            PreferitiButton.setText(isPreferito ? "Rimuovi dai preferiti" : "Aggiungi ai preferiti");
+        }
+    }
+
+    private void gestisciPreferito() {
+        if (isPreferito) {
+            String[] pacchetto = {"RIMUOVI_PREFERITO", nomeUtente, String.valueOf(idRistorante)};
+            String risposta = clientTK.inviaRichiesta(pacchetto);
+            if (risposta != null && !risposta.startsWith("ERRORE")) {
+                JOptionPane.showMessageDialog(this, "Ristorante rimosso dai preferiti con successo!", "Esito", JOptionPane.INFORMATION_MESSAGE);
+                isPreferito = false;
+                aggiornaTestoBottonePreferiti();
+            } else {
+                JOptionPane.showMessageDialog(this, risposta, "Errore", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            String[] pacchetto = {"AGGIUNGI_PREFERITO", nomeUtente, String.valueOf(idRistorante)};
+            String risposta = clientTK.inviaRichiesta(pacchetto);
+            if (risposta != null && risposta.startsWith("OK")) {
+                JOptionPane.showMessageDialog(this, "Ristorante aggiunto ai preferiti!", "Esito", JOptionPane.INFORMATION_MESSAGE);
+                isPreferito = true;
+                aggiornaTestoBottonePreferiti();
+            } else {
+                JOptionPane.showMessageDialog(this, risposta, "Errore", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 }

@@ -154,22 +154,9 @@ public class homePageU extends JFrame {
 
     public JPopupMenu creaMenu(JFrame parent, String nomeUtente) {
         JPopupMenu menuTendina = new JPopupMenu();
-        JMenuItem preferiti = new JMenuItem("I miei ristoranti preferiti");
-        JMenuItem recensioni = new JMenuItem("Le mie recensioni");
         JMenuItem logout = new JMenuItem("Logout");
 
-        preferiti.addActionListener(e -> {
-            MieiPreferiti dialog = new MieiPreferiti(parent, nomeUtente);
-            dialog.setVisible(true);
-        });
-
-        recensioni.addActionListener(e -> {
-            MieRecensioni dialog = new MieRecensioni(parent, nomeUtente);
-            dialog.setVisible(true);
-        });
-
         logout.addActionListener(e -> {
-            // Chiediamo conferma all'utente
             int conferma = JOptionPane.showConfirmDialog(
                     parent,
                     "Sei sicuro di voler effettuare il logout?",
@@ -178,30 +165,43 @@ public class homePageU extends JFrame {
                     JOptionPane.QUESTION_MESSAGE
             );
 
-            // Se clicca "Sì" (YES)
             if (conferma == JOptionPane.YES_OPTION) {
                 parent.dispose(); // Chiude la homePageU
-                new Home().setVisible(true); // Riapre la schermata principale iniziale
+                new Home().setVisible(true); // Riapre il menu principale
             }
         });
 
-        menuTendina.add(preferiti);
-        menuTendina.add(recensioni);
+        // Voci esclusive per i Clienti
+        if (u != null && u.getRuolo().equals("Cliente")) {
+            JMenuItem preferiti = new JMenuItem("I miei ristoranti preferiti");
+            JMenuItem recensioni = new JMenuItem("Le mie recensioni");
 
-        if (u != null && u.getRuolo().equals("Ristoratore")) {
+            preferiti.addActionListener(e -> {
+                MieiPreferiti dialog = new MieiPreferiti(parent, nomeUtente);
+                dialog.setVisible(true);
+            });
+
+            recensioni.addActionListener(e -> {
+                MieRecensioni dialog = new MieRecensioni(parent, nomeUtente);
+                dialog.setVisible(true);
+            });
+
+            menuTendina.add(preferiti);
+            menuTendina.add(recensioni);
+        }
+        // Voci esclusive per i Ristoratori
+        else if (u != null && u.getRuolo().equals("Ristoratore")) {
             JMenuItem aggiungi = new JMenuItem("Aggiungi ristorante");
             JMenuItem ristoranti = new JMenuItem("I miei ristoranti");
 
-            ristoranti.addActionListener(e -> {
-                proprietario(username);
-            });
-            aggiungi.addActionListener(e -> {
-                inserisci();
-            });
+            ristoranti.addActionListener(e -> proprietario(username));
+            aggiungi.addActionListener(e -> inserisci());
+
             menuTendina.add(aggiungi);
             menuTendina.add(ristoranti);
         }
 
+        // Il pulsante Logout viene aggiunto per tutti gli utenti loggati
         menuTendina.add(logout);
         return menuTendina;
     }

@@ -348,6 +348,10 @@ public class GestoreDatabase {
             pstmt.executeUpdate();
             return "OK Ristorante aggiunto ai preferiti!";
         }catch (SQLException e) {
+            // Controllo per la chiave duplicata (se già presente tra i preferiti)
+            if ("23505".equals(e.getSQLState())) {
+                return "ERRORE: Questo ristorante è già presente nei tuoi preferiti.";
+            }
             System.err.println("[DB] Errore SQL durante l'aggiunta ai preferiti: " + e.getMessage());
             return "ERRORE: Problema di comunicazione con il Database.";
         }
