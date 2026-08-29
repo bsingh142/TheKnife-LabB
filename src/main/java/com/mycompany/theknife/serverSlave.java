@@ -83,6 +83,9 @@ public class serverSlave extends Thread {
                     case "POSIZIONE":
                         gestisciPosizione(pacchetto);
                         break;
+                    case "POSIZIONE_RISTORANTE":
+                        gestisciPosizioneRistorante(pacchetto);
+                        break;
                     case "TIPI_CUCINA":
                         gestisciTipiCucina();
                         break;
@@ -168,6 +171,13 @@ public class serverSlave extends Thread {
 
     private void gestisciPosizione(String[] pacchetto) throws IOException {
         String risp=GestoreDatabase.ricercaPosizione(pacchetto[1],pacchetto[2]);
+        output.writeObject(risp);
+        output.flush();
+    }
+
+    private void gestisciPosizioneRistorante(String[] pacchetto) throws IOException {
+        // pacchetto conterrà: [0] comando, [1] indirizzo, [2] citta, [3] nazione
+        String risp = GestoreDatabase.ricercaPosizioneRistorante(pacchetto[1], pacchetto[2], pacchetto[3]);
         output.writeObject(risp);
         output.flush();
     }

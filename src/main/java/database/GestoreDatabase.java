@@ -142,6 +142,42 @@ public class GestoreDatabase {
 
     }
 
+    public static String ricercaPosizioneRistorante(String via, String citta, String nazione) {
+        try {
+            // Usiamo i parametri strutturati di Nominatim per la massima precisione
+            String url = "https://nominatim.openstreetmap.org/search"
+                    + "?street=" + URLEncoder.encode(via, StandardCharsets.UTF_8)
+                    + "&city=" + URLEncoder.encode(citta, StandardCharsets.UTF_8)
+                    + "&country=" + URLEncoder.encode(nazione, StandardCharsets.UTF_8)
+                    + "&format=jsonv2"
+                    + "&limit=1";
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("User-Agent", "TheKnife/1.0")
+                    .GET()
+                    .build();
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode risultati = mapper.readTree(response.body());
+
+            if (risultati.isEmpty()) {
+                return null; // Indirizzo non trovato
+            }
+
+            double latitudine = risultati.get(0).get("lat").asDouble();
+            double longitudine = risultati.get(0).get("lon").asDouble();
+            return latitudine + "/" + longitudine;
+
+        } catch (Exception e) {
+            System.err.println("[DB] Errore Geocoding Ristorante: " + e.getMessage());
+            return null;
+        }
+    }
+
     public static List<Ristorante> ricercaRistoranti(String richiesta, String posUtente, String urlDB, String userDB, String passDB){
         List<Ristorante> risultati = new ArrayList<>();
         if(richiesta.equalsIgnoreCase("TUTTI")){

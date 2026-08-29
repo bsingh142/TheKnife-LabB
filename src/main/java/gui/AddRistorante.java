@@ -16,8 +16,7 @@ public class AddRistorante extends JFrame {
     private JTextField txtindirizzo;
     private JTextField txtcitta;
     private JTextField txtnazione;
-    private JTextField latitudine;
-    private JTextField longitudine;
+    // Rimosse latitudine e longitudine!
     private JTextField fasciaprezzo;
     private JComboBox<Boolean> combodelivery;
     private JComboBox<Boolean> comboprenotazione;
@@ -72,8 +71,6 @@ public class AddRistorante extends JFrame {
         txtindirizzo.setText("");
         txtcitta.setText("");
         txtnazione.setText("");
-        latitudine.setText("");
-        longitudine.setText("");
         fasciaprezzo.setText("");
         if (combodelivery != null && combodelivery.getItemCount() > 0) {
             combodelivery.setSelectedIndex(0);
@@ -88,30 +85,40 @@ public class AddRistorante extends JFrame {
         String indirizzo = txtindirizzo.getText().trim();
         String citta = txtcitta.getText().trim();
         String nazione = txtnazione.getText().trim();
-
-        String lat = latitudine.getText().trim().replace(",", ".");
-        String lon = longitudine.getText().trim().replace(",", ".");
-
         String prezzo = fasciaprezzo.getText().trim();
         boolean del = (boolean) combodelivery.getSelectedItem();
         boolean prenot = (boolean)  comboprenotazione.getSelectedItem();
         String tipocucina = txttipocucina.getText().trim();
 
+        // Controllo campi vuoti senza più lat e lon
         if (nome.isEmpty() || indirizzo.isEmpty() || citta.isEmpty() ||
-                nazione.isEmpty() || tipocucina.isEmpty() || lat.isEmpty() || lon.isEmpty() || prezzo.isEmpty()){
+                nazione.isEmpty() || tipocucina.isEmpty() || prezzo.isEmpty()){
             JOptionPane.showMessageDialog(this, "Compilare tutti i campi.", "Attenzione", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         try {
-            Integer.parseInt(prezzo);
-            double latVal = Double.parseDouble(lat);
-            double lonVal = Double.parseDouble(lon);
+            int prezzoVal = Integer.parseInt(prezzo);
 
-            if (latVal < -90 || latVal > 90 || lonVal < -180 || lonVal > 180) {
-                JOptionPane.showMessageDialog(this, "Coordinate non valide!\nLa latitudine deve essere tra -90 e 90.\nLa longitudine tra -180 e 180.", "Errore Coordinate", JOptionPane.WARNING_MESSAGE);
+            if (prezzoVal < 1 || prezzoVal > 100) {
+                JOptionPane.showMessageDialog(this, "Attenzione: La fascia di prezzo deve essere un numero compreso tra 1 e 100!", "Errore Inserimento", JOptionPane.WARNING_MESSAGE);
                 return;
             }
+
+            // --- RICERCA AUTOMATICA DELLE COORDINATE (CON VIA) ---
+            String[] richiestaPos = {"POSIZIONE_RISTORANTE", indirizzo, citta, nazione};
+            String rispServer = clientTK.inviaRichiesta(richiestaPos);
+
+            if(rispServer == null || rispServer.startsWith("ERRORE:")){
+                JOptionPane.showMessageDialog(this,"Impossibile trovare le coordinate per l'indirizzo inserito. Verifica la correttezza di Via, Città e Nazione.","Indirizzo non trovato",JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Estraggo lat e lon precisissime
+            String[] tmp = rispServer.split("/");
+            String lat = tmp[0];
+            String lon = tmp[1];
+            // -----------------------------------------------------
 
             Ristorante nuovoRistorante = new Ristorante(nome, indirizzo, citta, nazione, lat, lon, prezzo, del, prenot, tipocucina, username);
             String messaggioServer = clientTK.inviaRichiesta(nuovoRistorante);
@@ -119,7 +126,6 @@ public class AddRistorante extends JFrame {
             if (messaggioServer != null && messaggioServer.startsWith("OK")) {
                 JOptionPane.showMessageDialog(this, messaggioServer, "Esito Inserimento ristorante", JOptionPane.INFORMATION_MESSAGE);
 
-                // AGGIORNIAMO LA HOME PAGE ATTUALE E CHIUDIAMO LA SCHERMATA
                 if(homeParent != null) {
                     homeParent.aggiornaVistaProprietario();
                 }
@@ -130,7 +136,7 @@ public class AddRistorante extends JFrame {
                 JOptionPane.showMessageDialog(this, errore, "Avviso Server", JOptionPane.ERROR_MESSAGE);
             }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Errore: Inserisci solo valori numerici per Latitudine, Longitudine e Fascia Prezzo.", "Errore Formato", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Errore: Inserisci un valore numerico valido per la Fascia Prezzo.", "Errore Formato", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
