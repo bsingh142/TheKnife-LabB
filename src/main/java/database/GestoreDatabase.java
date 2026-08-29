@@ -29,7 +29,7 @@ public class GestoreDatabase {
     /**
      * Esegue la query di inserimento. Ora restituisce una Stringa con l'esito preciso.
      */
-    public static String registraUtente(Utente u, String urlDB, String userDB, String passDB) {
+    public static synchronized String registraUtente(Utente u, String urlDB, String userDB, String passDB) {
         String query = "INSERT INTO utenti (nome, cognome, username, pwd, dob, latitudine,longitudine, ruolo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
@@ -302,7 +302,7 @@ public class GestoreDatabase {
     // METODI PREFERITI
     // ===================================================================================
 
-    public static String aggiungiPreferito(String user, int ristorante, String urlDB, String userDB, String passDB){
+    public static synchronized String aggiungiPreferito(String user, int ristorante, String urlDB, String userDB, String passDB){
         String query = "INSERT INTO preferiti(username, ristorante_id)" + "VALUES(?, ?)";
         try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -317,7 +317,7 @@ public class GestoreDatabase {
         }
     }
 
-    public static String rimuoviPreferito(String user, int ristorante, String urlDB, String userDB, String passDB){
+    public static synchronized String rimuoviPreferito(String user, int ristorante, String urlDB, String userDB, String passDB){
         String query = "DELETE FROM preferiti WHERE ristorante_id = ? AND username = ?";
         try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -376,7 +376,7 @@ public class GestoreDatabase {
     // METODI RECENSIONI
     // ===================================================================================
 
-    public static String aggiungiRecensione(Recensione recensione, String urlDB, String userDB, String passDB) {
+    public static synchronized String aggiungiRecensione(Recensione recensione, String urlDB, String userDB, String passDB) {
         if (recensione.getStelle() < 1 || recensione.getStelle() > 5) {
             return "ERRORE: La valutazione deve essere compresa tra 1 e 5 stelle.";
         }
@@ -439,7 +439,7 @@ public class GestoreDatabase {
         return listaRecensioni;
     }
 
-    public static String rispondiARecensione(int idRecensione, String testoRisposta, String urlDB, String userDB, String passDB) {
+    public static synchronized String rispondiARecensione(int idRecensione, String testoRisposta, String urlDB, String userDB, String passDB) {
         if (testoRisposta == null || testoRisposta.trim().isEmpty()) {
             return "ERRORE: La risposta non può essere vuota.";
         }
@@ -462,7 +462,7 @@ public class GestoreDatabase {
         }
     }
 
-    public static String eliminaRecensione(int idRecensione, String autore, String urlDB, String userDB, String passDB) {
+    public static synchronized String eliminaRecensione(int idRecensione, String autore, String urlDB, String userDB, String passDB) {
         String query = "DELETE FROM recensioni WHERE idrecensione = ? AND autore = ?";
 
         try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
@@ -566,7 +566,7 @@ public class GestoreDatabase {
         return lista;
     }
 
-    public static String modificaRecensione(int idRecensione, String autore, int stelle, String testo, String urlDB, String userDB, String passDB) {
+    public static synchronized String modificaRecensione(int idRecensione, String autore, int stelle, String testo, String urlDB, String userDB, String passDB) {
         if (stelle < 1 || stelle > 5) {
             return "ERRORE: La valutazione deve essere compresa tra 1 e 5 stelle.";
         }
@@ -598,7 +598,7 @@ public class GestoreDatabase {
     // METODI RISTORATORI
     // ===================================================================================
 
-    public static String aggiungiRistorante(Ristorante r, String urlDB, String userDB, String passDB) {
+    public static synchronized String aggiungiRistorante(Ristorante r, String urlDB, String userDB, String passDB) {
         String query = "INSERT INTO ristorantitheknife (nome, indirizzo, citta, nazione, latitudine, longitudine, fascia_prezzo, delivery, prenotazione_online, tipo_cucina, proprietario) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
@@ -689,7 +689,7 @@ public class GestoreDatabase {
         return risultati;
     }
 
-    public static int eliminaRistorante(String proprietario, long id, String urlDB, String userDB, String passDB){
+    public static synchronized int eliminaRistorante(String proprietario, long id, String urlDB, String userDB, String passDB){
 
         String query = "DELETE FROM ristorantitheknife WHERE id=? AND proprietario=?";
 
