@@ -82,7 +82,13 @@ public class homePageU extends JFrame {
         tabellaRistoranti.setGridColor(new Color(225, 230, 235));
         tabellaRistoranti.setShowGrid(true);
 
-        riempiTabella(tabellaRistoranti, new String[]{"RISTORANTI", "TUTTI"});
+        if(u.getRuolo().equals("Ristoratore")){
+            riempiTabella(tabellaRistoranti,new String[]{"PROPRIETARIO",u.getUsername()});
+            bottoneFiltri.setVisible(false);
+            buttonReset.setText("Aggiungi ristorante");
+        }else{
+            riempiTabella(tabellaRistoranti, new String[]{"RISTORANTI", "TUTTI"});
+        }
 
         tabellaRistoranti.addMouseListener(new MouseAdapter() {
             @Override
@@ -112,7 +118,7 @@ public class homePageU extends JFrame {
             buttonReset.setFont(topBtnFont);
             buttonReset.setCursor(new Cursor(Cursor.HAND_CURSOR));
         }
-        if (bottoneFiltri != null) {
+        if (bottoneFiltri != null && bottoneFiltri.isVisible()) {
             bottoneFiltri.setFont(topBtnFont);
             bottoneFiltri.setCursor(new Cursor(Cursor.HAND_CURSOR));
         }
@@ -178,8 +184,13 @@ public class homePageU extends JFrame {
         buttonReset.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                riempiTabella(tabellaRistoranti, new String[]{"RISTORANTI", "TUTTI"});
-                buttonReset.setText("Ripristina filtri");
+                if(buttonReset.getText().equals("Aggiungi ristorante")){
+                    inserisci();
+                }else{
+                    riempiTabella(tabellaRistoranti, new String[]{"RISTORANTI", "TUTTI"});
+                    buttonReset.setText("Ripristina filtri");
+                }
+
             }
         });
 
@@ -243,7 +254,7 @@ public class homePageU extends JFrame {
             menuTendina.add(recensioni);
         }
         // Voci esclusive per i Ristoratori
-        else if (u != null && u.getRuolo().equals("Ristoratore")) {
+        /*else if (u != null && u.getRuolo().equals("Ristoratore")) {
             JMenuItem aggiungi = new JMenuItem("Aggiungi ristorante");
             JMenuItem ristoranti = new JMenuItem("I miei ristoranti");
 
@@ -252,7 +263,7 @@ public class homePageU extends JFrame {
 
             menuTendina.add(aggiungi);
             menuTendina.add(ristoranti);
-        }
+        }*/
 
         // Il pulsante Logout viene aggiunto per tutti gli utenti loggati
         menuTendina.add(logout);
@@ -307,7 +318,7 @@ public class homePageU extends JFrame {
         List<Ristorante> list = clientTK.inviaRichiesta(new String[]{"PROPRIETARIO", username});
         if (list == null) list = new ArrayList<>();
         applicaFiltri(tabellaRistoranti, list);
-        if (buttonReset != null) buttonReset.setText("Indietro");
+        //if (buttonReset != null) buttonReset.setText("Indietro");
     }
 
     private void inserisci() {
