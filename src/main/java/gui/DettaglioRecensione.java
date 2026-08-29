@@ -4,6 +4,10 @@ import com.mycompany.theknife.clientTK;
 import modelli.Recensione;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import java.awt.*;
 
 public class DettaglioRecensione extends JDialog {
     private JPanel mainPanel;
@@ -16,7 +20,7 @@ public class DettaglioRecensione extends JDialog {
     private final Recensione recensione;
     private final String nomeUtente;
 
-    public DettaglioRecensione(JFrame parent, Recensione recensione, String nomeUtente) {
+    public DettaglioRecensione(JFrame parent, Recensione recensione, String nomeUtente, String nomeRistorante) {
         super(parent, "Modifica recensione", true);
         this.recensione = recensione;
         this.nomeUtente = nomeUtente;
@@ -26,16 +30,40 @@ public class DettaglioRecensione extends JDialog {
         }
 
         setContentPane(mainPanel);
-        setSize(450, 400);
+        setSize(480, 380);
         setLocationRelativeTo(parent);
 
-        lblRistorante.setText("Ristorante ID: " + recensione.getRistoranteId());
+        // 1. Spaziatura globale della finestra (padding interno di 15px)
+        mainPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
 
+        // 2. Intestazione in HTML elegante
+        lblRistorante.setText("<html><span style='font-family: sans-serif; font-size: 12pt; color: #2C3E50;'>Recensione per: <b>"
+                + nomeRistorante + "</b></span></html>");
+
+        // 3. Popolamento e stile Stelle
         if (comboStelle.getItemCount() == 0) {
             comboStelle.setModel(new DefaultComboBoxModel<>(new Integer[]{1, 2, 3, 4, 5}));
         }
         comboStelle.setSelectedItem(recensione.getStelle());
+        comboStelle.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // 4. Stile e bordo pulito per il campo di testo
         txtTesto.setText(recensione.getTesto());
+        txtTesto.setLineWrap(true);
+        txtTesto.setWrapStyleWord(true);
+        txtTesto.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        txtTesto.setBorder(new CompoundBorder(
+                new LineBorder(new Color(189, 195, 199), 1, true),
+                new EmptyBorder(8, 8, 8, 8)
+        ));
+
+        // 5. Fix refuso pulsante "Elimana" -> "Elimina" e stili visivi
+        btnSalva.setText("Salva Modifiche");
+        btnSalva.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        btnElimina.setText("Elimina Recensione");
+        btnElimina.setForeground(new Color(192, 57, 43)); // Rosso elegante per azione distruttiva
+        btnElimina.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         btnSalva.addActionListener(e -> salvaModifiche());
         btnElimina.addActionListener(e -> eliminaRecensione());
@@ -70,7 +98,8 @@ public class DettaglioRecensione extends JDialog {
         int conferma = JOptionPane.showConfirmDialog(this,
                 "Sei sicuro di voler eliminare questa recensione?",
                 "Conferma Eliminazione",
-                JOptionPane.YES_NO_OPTION);
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
 
         if (conferma != JOptionPane.YES_OPTION) return;
 
