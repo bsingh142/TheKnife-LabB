@@ -3,7 +3,7 @@ package modelli;
 import java.io.Serializable;
 
 public class Recensione implements Serializable {
-    private final long SerialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     private int idRecensione;
     private String autore;

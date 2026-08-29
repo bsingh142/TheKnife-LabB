@@ -181,7 +181,7 @@ public class GestoreDatabase {
     public static List<Ristorante> ricercaRistoranti(String richiesta, String posUtente, String urlDB, String userDB, String passDB){
         List<Ristorante> risultati = new ArrayList<>();
         if(richiesta.equalsIgnoreCase("TUTTI")){
-            String query="SELECT * FROM ristorantitheknife";
+            String query="SELECT * FROM ristorantitheknife ORDER BY id ASC";
 
             try(Connection conn=DriverManager.getConnection(urlDB,userDB,passDB);
                 PreparedStatement pstmt=conn.prepareStatement(query)){
@@ -480,7 +480,8 @@ public class GestoreDatabase {
             return "ERRORE: La risposta non può essere vuota.";
         }
 
-        String query = "UPDATE recensioni SET risposta = ? WHERE idrecensione = ?";
+        // AGGIUNTO 'AND risposta IS NULL' PER RISPETTARE LA SPECIFICA della singola risposta da parte del ristoratore!
+        String query = "UPDATE recensioni SET risposta = ? WHERE idrecensione = ? AND risposta IS NULL";
 
         try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -489,8 +490,7 @@ public class GestoreDatabase {
             pstmt.setInt(2, idRecensione);
 
             int righeAggiornate = pstmt.executeUpdate();
-            return righeAggiornate > 0 ? "OK: Risposta salvata con successo!" : "ERRORE: Recensione non trovata.";
-
+            return righeAggiornate > 0 ? "OK: Risposta salvata con successo!" : "ERRORE: Recensione non trovata o hai già risposto.";
 
         } catch (SQLException e) {
             System.err.println("[DB] Errore SQL durante l'inserimento della risposta: " + e.getMessage());

@@ -58,12 +58,23 @@ public class recensioniClient extends JDialog {
         ListaRecensioni.setLayout(new BoxLayout(ListaRecensioni, BoxLayout.Y_AXIS));
 
         // Gestione visibilità form per utente Guest
+// Gestione visibilità form per utente Guest e Ristoratore
         if (nomeUtente == null) {
             VistaLog.setVisible(false); // Nasconde l'intero pannello di inserimento se non loggato
             if (PreferitiButton != null) PreferitiButton.setVisible(false);
         } else {
-            if (ButtonInvio != null) ButtonInvio.addActionListener(e -> inviaRecensione());
-            if (PreferitiButton != null) PreferitiButton.addActionListener(e -> aggiungiPreferito());
+            // L'utente è loggato: chiediamo al server i suoi dettagli per scoprire il ruolo
+            modelli.Utente u = clientTK.inviaRichiesta(new String[]{"GET_UTENTE", nomeUtente});
+
+            // SE È UN RISTORATORE, BLOCCHIAMO RECENSIONI E PREFERITI
+            if (u != null && u.getRuolo().equals("Ristoratore")) {
+                VistaLog.setVisible(false);
+                if (PreferitiButton != null) PreferitiButton.setVisible(false);
+            } else {
+                // SE È UN CLIENTE NORMALE, ABILITIAMO I BOTTONI
+                if (ButtonInvio != null) ButtonInvio.addActionListener(e -> inviaRecensione());
+                if (PreferitiButton != null) PreferitiButton.addActionListener(e -> aggiungiPreferito());
+            }
         }
 
         // SOLO IL RISTORATORE PUÒ VEDERE LA MEDIA E RISPONDERE
@@ -85,66 +96,104 @@ public class recensioniClient extends JDialog {
         caricaRecensioni();
     }
 
-    private void caricaRecensioni() {
-        ListaRecensioni.removeAll();
-        int n = 0, totale = 0;
+        private void caricaRecensioni() {
+            ListaRecensioni.removeAll();
+            int n = 0, totale = 0;
 
-        List<Recensione> recensioni = clientTK.inviaRichiesta(new String[]{"GET_RECENSIONI", String.valueOf(idRistorante)});
+            List<Recensione> recensioni = com.mycompany.theknife.clientTK.inviaRichiesta(new String[]{"GET_RECENSIONI", String.valueOf(idRistorante)});
 
-        if (recensioni == null || recensioni.isEmpty()) {
-            JLabel lblEmpty = new JLabel("Nessuna recensione ancora presente per questo ristorante.");
-            lblEmpty.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            ListaRecensioni.add(lblEmpty);
-        } else {
-            for (Recensione r : recensioni) {
-                n++;
-                totale += r.getStelle();
-                JPanel card = new JPanel(new BorderLayout(5, 5));
-                card.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createEmptyBorder(5, 5, 5, 5),
-                        BorderFactory.createEtchedBorder()
-                ));
+            if (recensioni == null || recensioni.isEmpty()) {
+                JLabel lblEmpty = new JLabel("Nessuna recensione ancora presente per questo ristorante.");
+                lblEmpty.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+                ListaRecensioni.add(lblEmpty);
+            } else {
+                for (Recensione r : recensioni) {
+                    n++;
+                    totale += r.getStelle();
+                    JPanel card = new JPanel(new BorderLayout(5, 5));
+                    card.setBorder(BorderFactory.createCompoundBorder(
+                            BorderFactory.createEmptyBorder(5, 5, 5, 5),
+                            BorderFactory.createEtchedBorder()
+                    ));
 
-                String stelleStr = " ".repeat(r.getStelle()) + " ".repeat(5 - r.getStelle());
-                JLabel lblHeader = new JLabel(stelleStr + "  (" + r.getData() + ")");
-                lblHeader.setFont(new Font("Arial", Font.BOLD, 12));
+                    // Entità HTML Unicode compatibili al 100% su Windows, Mac e Linux
+                    String stellePiene = "&#9733;".repeat(r.getStelle());
+                    String stelleVuote = "&#9734;".repeat(5 - r.getStelle());
 
-                JTextArea txtCommento = new JTextArea(r.getTesto());
-                txtCommento.setEditable(false);
-                txtCommento.setOpaque(false);
-                txtCommento.setLineWrap(true);
-                txtCommento.setWrapStyleWord(true);
+                    // Gestione visualizzazione autore (Anonimo se l'utente attuale è Guest, altrimenti mostra lo Username)
+                    String nomeAutore = (nomeUtente == null) ? "Utente Anonimo" : r.getIdUtente();
 
-                card.add(lblHeader, BorderLayout.NORTH);
-                card.add(txtCommento, BorderLayout.CENTER);
+                    // Header con Stelle Dorate, Username e Data
+                    JLabel lblHeader = new JLabel("<html><span style='font-family: sans-serif; font-size: 11pt; color: #D4AC0D;'>"
+                            + stellePiene + stelleVuote + "</span> <b style='font-family: sans-serif; font-size: 10pt; color: #000000;'> "
+                            + nomeAutore + "</b> <span style='font-family: sans-serif; font-size: 9pt; color: #555555;'>("
+                            + r.getData() + ")</span></html>");
 
-                if (r.getRisposta() != null && !r.getRisposta().isEmpty()) {
-                    JLabel lblRisposta = new JLabel("  Risposta del Ristoratore: " + r.getRisposta());
-                    lblRisposta.setFont(new Font("Arial", Font.ITALIC, 11));
-                    lblRisposta.setForeground(new Color(0, 100, 0));
-                    card.add(lblRisposta, BorderLayout.SOUTH);
-                }
+                    JTextArea txtCommento = new JTextArea(r.getTesto());
+                    txtCommento.setEditable(false);
+                    txtCommento.setOpaque(false);
+                    txtCommento.setLineWrap(true);
+                    txtCommento.setWrapStyleWord(true);
 
-                ListaRecensioni.add(card);
+                    card.add(lblHeader, BorderLayout.NORTH);
+                    card.add(txtCommento, BorderLayout.CENTER);
 
-                // SOLO IL PROPRIETARIO PUÒ CLICCARE PER RISPONDERE
-                if (isProprietario) {
-                    if (Media != null) Media.setText(String.valueOf((float) totale / n));
-                    if (Tot != null) Tot.setText(String.valueOf(n));
+                    // --- GESTIONE PARTE INFERIORE: BOX RISPOSTA ELEGANTE O BOTTONE ---
+                    JPanel bottomPanel = new JPanel(new BorderLayout());
+                    bottomPanel.setOpaque(false);
 
-                    card.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                    card.addMouseListener(new java.awt.event.MouseAdapter() {
-                        @Override
-                        public void mouseClicked(java.awt.event.MouseEvent e) {
-                            apriPannelloRisposta(r);
-                        }
-                    });
+                    if (r.getRisposta() != null && !r.getRisposta().trim().isEmpty()) {
+                        // Box rientrato stile TripAdvisor / Google Reviews
+                        JPanel rispostaPanel = new JPanel(new BorderLayout(5, 5));
+                        rispostaPanel.setBackground(new Color(245, 247, 250)); // Grigio/Blu chiaro moderno
+                        rispostaPanel.setBorder(BorderFactory.createCompoundBorder(
+                                BorderFactory.createEmptyBorder(8, 15, 5, 5), // Indentazione a sinistra
+                                BorderFactory.createCompoundBorder(
+                                        BorderFactory.createMatteBorder(0, 3, 0, 0, new Color(41, 128, 185)), // Linea verticale blu d'accento
+                                        BorderFactory.createEmptyBorder(6, 10, 6, 8) // Padding interno
+                                )
+                        ));
+
+                        // Intestazione con ruolo del gestore ben distinto
+                        JLabel lblTitoloGestore = new JLabel("<html><b style='color: #2980B9; font-family: sans-serif; font-size: 10pt;'>Risposta del Ristoratore</b></html>");
+
+                        JTextArea txtRisposta = new JTextArea(r.getRisposta());
+                        txtRisposta.setEditable(false);
+                        txtRisposta.setOpaque(false);
+                        txtRisposta.setLineWrap(true);
+                        txtRisposta.setWrapStyleWord(true);
+                        txtRisposta.setFont(new Font("SansSerif", Font.PLAIN, 12));
+                        txtRisposta.setForeground(new Color(44, 62, 80));
+
+                        rispostaPanel.add(lblTitoloGestore, BorderLayout.NORTH);
+                        rispostaPanel.add(txtRisposta, BorderLayout.CENTER);
+
+                        bottomPanel.add(rispostaPanel, BorderLayout.CENTER);
+                    } else if (isProprietario) {
+                        // SE NON C'È RISPOSTA E L'UTENTE È IL PROPRIETARIO: Mostra il bottone
+                        JButton btnRispondi = new JButton("Rispondi");
+                        btnRispondi.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                        btnRispondi.addActionListener(e -> apriPannelloRisposta(r));
+
+                        JPanel btnWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+                        btnWrapper.setOpaque(false);
+                        btnWrapper.add(btnRispondi);
+                        bottomPanel.add(btnWrapper, BorderLayout.EAST);
+                    }
+
+                    card.add(bottomPanel, BorderLayout.SOUTH);
+                    ListaRecensioni.add(card);
+
+                    // Aggiorniamo le statistiche in alto per il proprietario
+                    if (isProprietario) {
+                        if (Media != null) Media.setText(String.format("%.1f", (float) totale / n));
+                        if (Tot != null) Tot.setText(String.valueOf(n));
+                    }
                 }
             }
+            ListaRecensioni.revalidate();
+            ListaRecensioni.repaint();
         }
-        ListaRecensioni.revalidate();
-        ListaRecensioni.repaint();
-    }
 
     private void inviaRecensione() {
         String testo = TestoNuovaRecensione.getText().trim();
