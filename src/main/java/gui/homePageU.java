@@ -1,6 +1,7 @@
 package gui;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -31,10 +32,25 @@ public class homePageU extends JFrame {
         if (mainPanel == null) {
             throw new IllegalStateException("Il mainPanel non è stato associato correttamente nel file homePageU.form");
         }
-        //bottone esci nascosto per utenti loggati
+
+        // 1. Spaziatura perimetrale pulita per la dashboard
+        mainPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
+
+        // bottone esci nascosto per utenti loggati
         if (esciOspiteButton != null) {
             esciOspiteButton.setVisible(false);
         }
+
+        // Impostiamo l'operazione di chiusura manuale
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+        // click sulla X della finestra
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                confermaUscita();
+            }
+        });
 
         this.posizioneUtente = pos;
         setContentPane(mainPanel);
@@ -53,6 +69,18 @@ public class homePageU extends JFrame {
         });
         tabellaRistoranti.getTableHeader().setReorderingAllowed(false);
         tabellaRistoranti.getTableHeader().setResizingAllowed(false);
+
+        // 2. Styling avanzato della Tabella Ristoranti
+        tabellaRistoranti.setRowHeight(28);
+        tabellaRistoranti.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        tabellaRistoranti.setSelectionBackground(new Color(232, 240, 254)); // Evidenziazione azzurra
+        tabellaRistoranti.setSelectionForeground(Color.BLACK);
+
+        tabellaRistoranti.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
+        tabellaRistoranti.getTableHeader().setBackground(new Color(240, 243, 244));
+        tabellaRistoranti.getTableHeader().setForeground(new Color(44, 62, 80));
+        tabellaRistoranti.setGridColor(new Color(225, 230, 235));
+        tabellaRistoranti.setShowGrid(true);
 
         riempiTabella(tabellaRistoranti, new String[]{"RISTORANTI", "TUTTI"});
 
@@ -77,6 +105,27 @@ public class homePageU extends JFrame {
             }
         });
 
+        // 3. Styling dei pulsanti della Top Bar
+        Font topBtnFont = new Font("SansSerif", Font.BOLD, 12);
+
+        if (buttonReset != null) {
+            buttonReset.setFont(topBtnFont);
+            buttonReset.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        }
+        if (bottoneFiltri != null) {
+            bottoneFiltri.setFont(topBtnFont);
+            bottoneFiltri.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        }
+        if (eliminaButton != null) {
+            eliminaButton.setFont(topBtnFont);
+            eliminaButton.setForeground(new Color(192, 57, 43)); // Rosso per l'eliminazione
+            eliminaButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        }
+        if (esciOspiteButton != null) {
+            esciOspiteButton.setFont(topBtnFont);
+            esciOspiteButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        }
+
         if (nomeUtente == null) {
             labelUsername.setVisible(false);
             if (esciOspiteButton != null) {
@@ -87,7 +136,9 @@ public class homePageU extends JFrame {
                 });
             }
         } else {
-            labelUsername.setText(nomeUtente);
+            // Forziamo il 'nowrap' per impedire l'a capo automatico e bloccare gli elementi affiancati
+            labelUsername.setText("<html><span style='white-space: nowrap; font-family: sans-serif; font-size: 10pt; color: #2C3E50;'><b>"
+                    + nomeUtente + "</b> &nbsp;<span style='font-size: 8pt; color: #555555;'>&#9660;</span></span></html>");
             labelUsername.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseEntered(MouseEvent e) {
@@ -128,9 +179,11 @@ public class homePageU extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 riempiTabella(tabellaRistoranti, new String[]{"RISTORANTI", "TUTTI"});
+                buttonReset.setText("Ripristina filtri");
             }
         });
 
+        // Adatta il layout al form grafico mantenendo la griglia intatta
         pack();
         setLocationRelativeTo(null);
 
@@ -254,6 +307,7 @@ public class homePageU extends JFrame {
         List<Ristorante> list = clientTK.inviaRichiesta(new String[]{"PROPRIETARIO", username});
         if (list == null) list = new ArrayList<>();
         applicaFiltri(tabellaRistoranti, list);
+        if (buttonReset != null) buttonReset.setText("Indietro");
     }
 
     private void inserisci() {
@@ -265,5 +319,19 @@ public class homePageU extends JFrame {
     // Metodo PUBBLICO per far riaggiornare la tabella dall'esterno
     public void aggiornaVistaProprietario() {
         proprietario(username);
+    }
+
+    private void confermaUscita() {
+        int risposta = JOptionPane.showConfirmDialog(
+                this,
+                "Sei sicuro di voler uscire?",
+                "Conferma Uscita",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (risposta == JOptionPane.YES_OPTION) {
+            System.exit(0); // Arresta la JVM e chiude definitivamente il programma
+        }
     }
 }

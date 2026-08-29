@@ -1,11 +1,13 @@
 package gui;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import java.awt.*;
 import com.mycompany.theknife.clientTK;
 
-public class richiestaPosGuest extends JDialog{
+public class richiestaPosGuest extends JDialog {
     private JPanel mainPanel;
     private JTextField nomeCitta;
     private JTextField nomeNazione;
@@ -14,22 +16,50 @@ public class richiestaPosGuest extends JDialog{
     // Variabile mantenuta dal branch "modifiche" per chiudere la Home correttamente
     private boolean successo = false;
 
-    public richiestaPosGuest(JFrame padre){
-        super(padre,"Inserisci posizione",true);
+    public richiestaPosGuest(JFrame padre) {
+        super(padre, "Inserisci Posizione", true);
+
+        if (mainPanel == null) {
+            throw new IllegalStateException("Il mainPanel non è stato associato correttamente nel file .form");
+        }
         setContentPane(mainPanel);
 
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        if(invioButton != null){
+        // 1. Spaziatura perimetrale pulita e proporzioni Dialog
+        mainPanel.setBorder(new EmptyBorder(20, 25, 20, 25));
+        setSize(380, 250);
+        setResizable(false);
+
+        // 2. Bordo moderno con padding interno per i campi di testo
+        CompoundBorder campoTestoStyle = new CompoundBorder(
+                new LineBorder(new Color(189, 195, 199), 1, true),
+                new EmptyBorder(6, 10, 6, 10)
+        );
+
+        if (nomeCitta != null) {
+            nomeCitta.setFont(new Font("SansSerif", Font.PLAIN, 12));
+            nomeCitta.setBorder(campoTestoStyle);
+        }
+
+        if (nomeNazione != null) {
+            nomeNazione.setFont(new Font("SansSerif", Font.PLAIN, 12));
+            nomeNazione.setBorder(campoTestoStyle);
+        }
+
+        // 3. Styling del pulsante Invio
+        if (invioButton != null) {
+            invioButton.setText("Cerca Ristoranti");
+            invioButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            invioButton.setFont(new Font("SansSerif", Font.BOLD, 12));
             invioButton.addActionListener(e -> apriHomePageU());
         }
 
-        pack();
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(padre);
     }
 
-    private void apriHomePageU(){
-        String citta = nomeCitta.getText();
-        String nazione = nomeNazione.getText();
+    private void apriHomePageU() {
+        String citta = (nomeCitta != null) ? nomeCitta.getText().trim() : "";
+        String nazione = (nomeNazione != null) ? nomeNazione.getText().trim() : "";
 
         if (citta.isEmpty() || nazione.isEmpty()) {
             JOptionPane.showMessageDialog(
@@ -45,7 +75,7 @@ public class richiestaPosGuest extends JDialog{
         String rispServer = clientTK.inviaRichiesta(richiesta);
         System.out.println("[DEBUG] COORDINATE RICEVUTE: " + rispServer);
 
-        if(rispServer == null){
+        if (rispServer == null) {
             JOptionPane.showMessageDialog(
                     this,
                     "Domicilio non riconosciuto",

@@ -4,6 +4,10 @@ import com.mycompany.theknife.clientTK;
 import modelli.Ristorante;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -16,7 +20,6 @@ public class AddRistorante extends JFrame {
     private JTextField txtindirizzo;
     private JTextField txtcitta;
     private JTextField txtnazione;
-    // Rimosse latitudine e longitudine!
     private JTextField fasciaprezzo;
     private JComboBox<Boolean> combodelivery;
     private JComboBox<Boolean> comboprenotazione;
@@ -33,22 +36,60 @@ public class AddRistorante extends JFrame {
         }
         setContentPane(mainPanel);
         setTitle("Registrazione nuovo ristorante - TheKnife");
-
-        // Alla chiusura della X, eliminiamo semplicemente questa finestra
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        if (combodelivery != null && combodelivery.getItemCount() == 0) {
-            combodelivery.addItem(true);
-            combodelivery.addItem(false);
-        }
-        if (comboprenotazione!= null && comboprenotazione.getItemCount() == 0) {
-            comboprenotazione.addItem(true);
-            comboprenotazione.addItem(false);
+        // 1. Spaziatura perimetrale pulita
+        mainPanel.setBorder(new EmptyBorder(20, 25, 20, 25));
+
+        // 2. Styling uniforme dei campi di testo
+        CompoundBorder campoTestoStyle = new CompoundBorder(
+                new LineBorder(new Color(189, 195, 199), 1, true),
+                new EmptyBorder(6, 10, 6, 10)
+        );
+        Font fontInput = new Font("SansSerif", Font.PLAIN, 12);
+
+        JTextField[] campiTesto = {txtNome, txtindirizzo, txtcitta, txtnazione, fasciaprezzo, txttipocucina};
+        for (JTextField campo : campiTesto) {
+            if (campo != null) {
+                campo.setFont(fontInput);
+                campo.setBorder(campoTestoStyle);
+            }
         }
 
-        finalizzaButton.addActionListener(e -> gestisciAggiunta());
-        resetButton.addActionListener(a -> pulisciCampi());
+        if (combodelivery != null) {
+            combodelivery.setFont(fontInput);
+            combodelivery.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            if (combodelivery.getItemCount() == 0) {
+                combodelivery.addItem(true);
+                combodelivery.addItem(false);
+            }
+        }
 
+        if (comboprenotazione != null) {
+            comboprenotazione.setFont(fontInput);
+            comboprenotazione.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            if (comboprenotazione.getItemCount() == 0) {
+                comboprenotazione.addItem(true);
+                comboprenotazione.addItem(false);
+            }
+        }
+
+        // 3. Styling dei pulsanti
+        Font btnFont = new Font("SansSerif", Font.BOLD, 12);
+
+        if (finalizzaButton != null) {
+            finalizzaButton.setFont(btnFont);
+            finalizzaButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            finalizzaButton.addActionListener(e -> gestisciAggiunta());
+        }
+
+        if (resetButton != null) {
+            resetButton.setFont(btnFont);
+            resetButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            resetButton.addActionListener(a -> pulisciCampi());
+        }
+
+        // Adattamento compatto al layout nativo
         pack();
         setLocationRelativeTo(parent);
     }
@@ -72,6 +113,7 @@ public class AddRistorante extends JFrame {
         txtcitta.setText("");
         txtnazione.setText("");
         fasciaprezzo.setText("");
+        txttipocucina.setText("");
         if (combodelivery != null && combodelivery.getItemCount() > 0) {
             combodelivery.setSelectedIndex(0);
         }
@@ -87,10 +129,9 @@ public class AddRistorante extends JFrame {
         String nazione = txtnazione.getText().trim();
         String prezzo = fasciaprezzo.getText().trim();
         boolean del = (boolean) combodelivery.getSelectedItem();
-        boolean prenot = (boolean)  comboprenotazione.getSelectedItem();
+        boolean prenot = (boolean) comboprenotazione.getSelectedItem();
         String tipocucina = txttipocucina.getText().trim();
 
-        // Controllo campi vuoti senza più lat e lon
         if (nome.isEmpty() || indirizzo.isEmpty() || citta.isEmpty() ||
                 nazione.isEmpty() || tipocucina.isEmpty() || prezzo.isEmpty()){
             JOptionPane.showMessageDialog(this, "Compilare tutti i campi.", "Attenzione", JOptionPane.WARNING_MESSAGE);
@@ -105,7 +146,6 @@ public class AddRistorante extends JFrame {
                 return;
             }
 
-            // --- RICERCA AUTOMATICA DELLE COORDINATE (CON VIA) ---
             String[] richiestaPos = {"POSIZIONE_RISTORANTE", indirizzo, citta, nazione};
             String rispServer = clientTK.inviaRichiesta(richiestaPos);
 
@@ -114,11 +154,9 @@ public class AddRistorante extends JFrame {
                 return;
             }
 
-            // Estraggo lat e lon precisissime
             String[] tmp = rispServer.split("/");
             String lat = tmp[0];
             String lon = tmp[1];
-            // -----------------------------------------------------
 
             Ristorante nuovoRistorante = new Ristorante(nome, indirizzo, citta, nazione, lat, lon, prezzo, del, prenot, tipocucina, username);
             String messaggioServer = clientTK.inviaRichiesta(nuovoRistorante);

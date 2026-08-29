@@ -1,6 +1,8 @@
 package gui;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 
 /**
  * Schermata principale dell'applicazione (Home Page).
@@ -28,32 +30,41 @@ public class Home extends JFrame {
         // Impostazioni base della finestra
         setContentPane(mainPanel);
         setTitle("The Knife - Menu Principale");
-        // EXIT_ON_CLOSE chiude l'intero programma se si chiude la finestra principale
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Collegamento delle azioni ai pulsanti
+        // Styling grafico: margini interni e dimensioni fisse proporzionate
+        mainPanel.setBorder(new EmptyBorder(25, 35, 25, 35));
+        setSize(420, 360);
+        setResizable(false);
+        setLocationRelativeTo(null);
+
+        // Font e cursori dinamici per i pulsanti
+        Font btnFont = new Font("SansSerif", Font.BOLD, 13);
+
+        // Collegamento delle azioni e dello stile ai pulsanti
         if (accediButton != null) {
+            accediButton.setFont(btnFont);
+            accediButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
             accediButton.addActionListener(e -> apriLogin());
         }
 
         if (registratiButton != null) {
+            registratiButton.setFont(btnFont);
+            registratiButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
             registratiButton.addActionListener(e -> apriRegistrazione());
         }
 
         if (continuaComeOspiteButton != null) {
+            continuaComeOspiteButton.setFont(btnFont);
+            continuaComeOspiteButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
             continuaComeOspiteButton.addActionListener(e -> continuaComeOspite());
         }
-
-        // Adatta le dimensioni e centra la finestra sullo schermo
-        pack();
-        setLocationRelativeTo(null);
     }
 
     /**
      * Metodo per aprire la finestra di Login.
      */
     private void apriLogin() {
-        // Crea e mostra la finestra di Login
         new Login().setVisible(true);
         this.dispose();
     }
@@ -62,7 +73,6 @@ public class Home extends JFrame {
      * Metodo per aprire la finestra di Registrazione.
      */
     private void apriRegistrazione() {
-        // Crea e mostra la finestra di Registrazione
         new Registrazione().setVisible(true);
         this.dispose();
     }
@@ -74,7 +84,7 @@ public class Home extends JFrame {
         richiestaPosGuest dialog = new richiestaPosGuest(Home.this);
         dialog.setVisible(true);
         if (dialog.getSuccesso()) {
-            this.dispose(); // Chiude definitivamente la Home
+            this.dispose(); // Chiude definitivamente la Home solo in caso di esito positivo
         }
     }
 

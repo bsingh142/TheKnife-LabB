@@ -3,6 +3,9 @@ package gui;
 import modelli.Recensione;
 import modelli.Ristorante;
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import com.mycompany.theknife.clientTK;
 import java.awt.*;
 import java.util.List;
@@ -42,38 +45,72 @@ public class recensioniClient extends JDialog {
             throw new IllegalStateException("Il mainPanel non è stato associato correttamente nel file recensioniClient.form");
         }
         setContentPane(mainPanel);
-        setSize(700, 700);
-        setLocationRelativeTo(parent);
+
+        // 1. Padding globale della finestra
+        mainPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
 
         // Imposta l'intestazione con il nome del ristorante
-        NomeRistorante.setText("Recensioni per: " + nomeRistoranteText);
-
-        // Inizializza le opzioni delle stelle se il ComboBox è vuoto
-        if (comboStelle.getItemCount() == 0) {
-            DefaultComboBoxModel<Integer> model = new DefaultComboBoxModel<>(new Integer[]{1, 2, 3, 4, 5});
-            comboStelle.setModel(model);
-            comboStelle.setSelectedIndex(4); // Default: 5 stelle
+        if (NomeRistorante != null) {
+            NomeRistorante.setText("<html><h2 style='font-family: sans-serif; color: #2C3E50; margin: 0; padding-bottom: 5px;'>Recensioni per: " + nomeRistoranteText + "</h2></html>");
         }
 
-        // Imposta il layout verticale per il pannello interno dello ScrollPane
+        // Inizializza le opzioni delle stelle
+        if (comboStelle != null) {
+            if (comboStelle.getItemCount() == 0) {
+                DefaultComboBoxModel<Integer> model = new DefaultComboBoxModel<>(new Integer[]{1, 2, 3, 4, 5});
+                comboStelle.setModel(model);
+                comboStelle.setSelectedIndex(4); // Default: 5 stelle
+            }
+            comboStelle.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            comboStelle.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        }
+
+        // 2. Styling area di testo per nuova recensione
+        if (TestoNuovaRecensione != null) {
+            TestoNuovaRecensione.setFont(new Font("SansSerif", Font.PLAIN, 12));
+            TestoNuovaRecensione.setBorder(new CompoundBorder(
+                    new LineBorder(new Color(189, 195, 199), 1, true),
+                    new EmptyBorder(6, 10, 6, 10)
+            ));
+        }
+
+        // 3. Styling dei Bottoni
+        Font btnFont = new Font("SansSerif", Font.BOLD, 12);
+        if (ButtonInvio != null) {
+            ButtonInvio.setFont(btnFont);
+            ButtonInvio.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            ButtonInvio.addActionListener(e -> inviaRecensione());
+        }
+
+        if (PreferitiButton != null) {
+            PreferitiButton.setFont(btnFont);
+            PreferitiButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        }
+
+        // Font e allineamenti etichette
+        if (Stelle != null) Stelle.setFont(new Font("SansSerif", Font.BOLD, 12));
+        if (RichiediRecensione != null) RichiediRecensione.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        if (mediaRecensioni != null) mediaRecensioni.setFont(new Font("SansSerif", Font.BOLD, 12));
+        if (recensioniTotali != null) recensioniTotali.setFont(new Font("SansSerif", Font.BOLD, 12));
+        if (Media != null) Media.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        if (Tot != null) Tot.setFont(new Font("SansSerif", Font.PLAIN, 12));
+
         ListaRecensioni.setLayout(new BoxLayout(ListaRecensioni, BoxLayout.Y_AXIS));
+        if(ScorriRecensioni != null) {
+            ScorriRecensioni.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        }
 
         // --- CONTROLLO RUOLI E VISIBILITÀ ---
         if (nomeUtente == null) {
-            // Utente Guest: nasconde sia l'inserimento recensione che i preferiti
             VistaLog.setVisible(false);
             if (PreferitiButton != null) PreferitiButton.setVisible(false);
         } else {
-            // Utente Loggato: verifichiamo il ruolo
             modelli.Utente u = clientTK.inviaRichiesta(new String[]{"GET_UTENTE", nomeUtente});
 
             if (u != null && u.getRuolo().equals("Ristoratore")) {
-                // Il Ristoratore non può recensire né gestire i preferiti
                 VistaLog.setVisible(false);
                 if (PreferitiButton != null) PreferitiButton.setVisible(false);
             } else {
-                // SE È UN CLIENTE NORMALE: colleghiamo i listener e controlliamo lo stato preferiti
-                if (ButtonInvio != null) ButtonInvio.addActionListener(e -> inviaRecensione());
                 if (PreferitiButton != null) {
                     controllaStatoPreferito();
                     PreferitiButton.addActionListener(e -> gestisciPreferito());
@@ -81,7 +118,6 @@ public class recensioniClient extends JDialog {
             }
         }
 
-        // SOLO IL RISTORATORE PROPRIETARIO PUÒ VEDERE LE STATISTICHE
         if (nomeUtente != null) {
             Ristorante ristorante = clientTK.inviaRichiesta(new String[]{"RICERCA_ID", String.valueOf(idRistorante)});
             if (ristorante != null && nomeUtente.equals(ristorante.getProprietario())) {
@@ -96,108 +132,105 @@ public class recensioniClient extends JDialog {
             if (Tot != null) Tot.setVisible(false);
         }
 
-        // Carica le recensioni dal Server
         caricaRecensioni();
+
+        setSize(700, 700);
+        setLocationRelativeTo(parent);
     }
 
-        private void caricaRecensioni() {
-            ListaRecensioni.removeAll();
-            int n = 0, totale = 0;
+    private void caricaRecensioni() {
+        ListaRecensioni.removeAll();
+        int n = 0, totale = 0;
 
-            List<Recensione> recensioni = com.mycompany.theknife.clientTK.inviaRichiesta(new String[]{"GET_RECENSIONI", String.valueOf(idRistorante)});
+        List<Recensione> recensioni = com.mycompany.theknife.clientTK.inviaRichiesta(new String[]{"GET_RECENSIONI", String.valueOf(idRistorante)});
 
-            if (recensioni == null || recensioni.isEmpty()) {
-                JLabel lblEmpty = new JLabel("Nessuna recensione ancora presente per questo ristorante.");
-                lblEmpty.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-                ListaRecensioni.add(lblEmpty);
-            } else {
-                for (Recensione r : recensioni) {
-                    n++;
-                    totale += r.getStelle();
-                    JPanel card = new JPanel(new BorderLayout(5, 5));
-                    card.setBorder(BorderFactory.createCompoundBorder(
-                            BorderFactory.createEmptyBorder(5, 5, 5, 5),
-                            BorderFactory.createEtchedBorder()
+        if (recensioni == null || recensioni.isEmpty()) {
+            JLabel lblEmpty = new JLabel("Nessuna recensione ancora presente per questo ristorante.");
+            lblEmpty.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            lblEmpty.setFont(new Font("SansSerif", Font.ITALIC, 12));
+            ListaRecensioni.add(lblEmpty);
+        } else {
+            for (Recensione r : recensioni) {
+                n++;
+                totale += r.getStelle();
+                JPanel card = new JPanel(new BorderLayout(5, 5));
+                card.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createEmptyBorder(5, 5, 5, 5),
+                        BorderFactory.createEtchedBorder()
+                ));
+
+                String stellePiene = "&#9733;".repeat(r.getStelle());
+                String stelleVuote = "&#9734;".repeat(5 - r.getStelle());
+
+                String nomeAutore = (nomeUtente == null) ? "Utente Anonimo" : r.getIdUtente();
+
+                JLabel lblHeader = new JLabel("<html><span style='font-family: sans-serif; font-size: 11pt; color: #D4AC0D;'>"
+                        + stellePiene + stelleVuote + "</span> <b style='font-family: sans-serif; font-size: 10pt; color: #000000;'> "
+                        + nomeAutore + "</b> <span style='font-family: sans-serif; font-size: 9pt; color: #555555;'>("
+                        + r.getData() + ")</span></html>");
+
+                JTextArea txtCommento = new JTextArea(r.getTesto());
+                txtCommento.setEditable(false);
+                txtCommento.setOpaque(false);
+                txtCommento.setLineWrap(true);
+                txtCommento.setWrapStyleWord(true);
+                txtCommento.setFont(new Font("SansSerif", Font.PLAIN, 12));
+
+                card.add(lblHeader, BorderLayout.NORTH);
+                card.add(txtCommento, BorderLayout.CENTER);
+
+                JPanel bottomPanel = new JPanel(new BorderLayout());
+                bottomPanel.setOpaque(false);
+
+                if (r.getRisposta() != null && !r.getRisposta().trim().isEmpty()) {
+                    JPanel rispostaPanel = new JPanel(new BorderLayout(5, 5));
+                    rispostaPanel.setBackground(new Color(245, 247, 250));
+                    rispostaPanel.setBorder(BorderFactory.createCompoundBorder(
+                            BorderFactory.createEmptyBorder(8, 15, 5, 5),
+                            BorderFactory.createCompoundBorder(
+                                    BorderFactory.createMatteBorder(0, 3, 0, 0, new Color(41, 128, 185)),
+                                    BorderFactory.createEmptyBorder(6, 10, 6, 8)
+                            )
                     ));
 
-                    // Entità HTML Unicode compatibili al 100% su Windows, Mac e Linux
-                    String stellePiene = "&#9733;".repeat(r.getStelle());
-                    String stelleVuote = "&#9734;".repeat(5 - r.getStelle());
+                    JLabel lblTitoloGestore = new JLabel("<html><b style='color: #2980B9; font-family: sans-serif; font-size: 10pt;'>Risposta del Ristoratore</b></html>");
 
-                    // Gestione visualizzazione autore (Anonimo se l'utente attuale è Guest, altrimenti mostra lo Username)
-                    String nomeAutore = (nomeUtente == null) ? "Utente Anonimo" : r.getIdUtente();
+                    JTextArea txtRisposta = new JTextArea(r.getRisposta());
+                    txtRisposta.setEditable(false);
+                    txtRisposta.setOpaque(false);
+                    txtRisposta.setLineWrap(true);
+                    txtRisposta.setWrapStyleWord(true);
+                    txtRisposta.setFont(new Font("SansSerif", Font.PLAIN, 12));
+                    txtRisposta.setForeground(new Color(44, 62, 80));
 
-                    // Header con Stelle Dorate, Username e Data
-                    JLabel lblHeader = new JLabel("<html><span style='font-family: sans-serif; font-size: 11pt; color: #D4AC0D;'>"
-                            + stellePiene + stelleVuote + "</span> <b style='font-family: sans-serif; font-size: 10pt; color: #000000;'> "
-                            + nomeAutore + "</b> <span style='font-family: sans-serif; font-size: 9pt; color: #555555;'>("
-                            + r.getData() + ")</span></html>");
+                    rispostaPanel.add(lblTitoloGestore, BorderLayout.NORTH);
+                    rispostaPanel.add(txtRisposta, BorderLayout.CENTER);
 
-                    JTextArea txtCommento = new JTextArea(r.getTesto());
-                    txtCommento.setEditable(false);
-                    txtCommento.setOpaque(false);
-                    txtCommento.setLineWrap(true);
-                    txtCommento.setWrapStyleWord(true);
+                    bottomPanel.add(rispostaPanel, BorderLayout.CENTER);
+                } else if (isProprietario) {
+                    JButton btnRispondi = new JButton("Rispondi");
+                    btnRispondi.setFont(new Font("SansSerif", Font.BOLD, 11));
+                    btnRispondi.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                    btnRispondi.addActionListener(e -> apriPannelloRisposta(r));
 
-                    card.add(lblHeader, BorderLayout.NORTH);
-                    card.add(txtCommento, BorderLayout.CENTER);
+                    JPanel btnWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+                    btnWrapper.setOpaque(false);
+                    btnWrapper.add(btnRispondi);
+                    bottomPanel.add(btnWrapper, BorderLayout.EAST);
+                }
 
-                    // --- GESTIONE PARTE INFERIORE: BOX RISPOSTA ELEGANTE O BOTTONE ---
-                    JPanel bottomPanel = new JPanel(new BorderLayout());
-                    bottomPanel.setOpaque(false);
+                card.add(bottomPanel, BorderLayout.SOUTH);
+                ListaRecensioni.add(card);
 
-                    if (r.getRisposta() != null && !r.getRisposta().trim().isEmpty()) {
-                        // Box rientrato stile TripAdvisor / Google Reviews
-                        JPanel rispostaPanel = new JPanel(new BorderLayout(5, 5));
-                        rispostaPanel.setBackground(new Color(245, 247, 250)); // Grigio/Blu chiaro moderno
-                        rispostaPanel.setBorder(BorderFactory.createCompoundBorder(
-                                BorderFactory.createEmptyBorder(8, 15, 5, 5), // Indentazione a sinistra
-                                BorderFactory.createCompoundBorder(
-                                        BorderFactory.createMatteBorder(0, 3, 0, 0, new Color(41, 128, 185)), // Linea verticale blu d'accento
-                                        BorderFactory.createEmptyBorder(6, 10, 6, 8) // Padding interno
-                                )
-                        ));
-
-                        // Intestazione con ruolo del gestore ben distinto
-                        JLabel lblTitoloGestore = new JLabel("<html><b style='color: #2980B9; font-family: sans-serif; font-size: 10pt;'>Risposta del Ristoratore</b></html>");
-
-                        JTextArea txtRisposta = new JTextArea(r.getRisposta());
-                        txtRisposta.setEditable(false);
-                        txtRisposta.setOpaque(false);
-                        txtRisposta.setLineWrap(true);
-                        txtRisposta.setWrapStyleWord(true);
-                        txtRisposta.setFont(new Font("SansSerif", Font.PLAIN, 12));
-                        txtRisposta.setForeground(new Color(44, 62, 80));
-
-                        rispostaPanel.add(lblTitoloGestore, BorderLayout.NORTH);
-                        rispostaPanel.add(txtRisposta, BorderLayout.CENTER);
-
-                        bottomPanel.add(rispostaPanel, BorderLayout.CENTER);
-                    } else if (isProprietario) {
-                        // SE NON C'È RISPOSTA E L'UTENTE È IL PROPRIETARIO: Mostra il bottone
-                        JButton btnRispondi = new JButton("Rispondi");
-                        btnRispondi.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                        btnRispondi.addActionListener(e -> apriPannelloRisposta(r));
-
-                        JPanel btnWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-                        btnWrapper.setOpaque(false);
-                        btnWrapper.add(btnRispondi);
-                        bottomPanel.add(btnWrapper, BorderLayout.EAST);
-                    }
-
-                    card.add(bottomPanel, BorderLayout.SOUTH);
-                    ListaRecensioni.add(card);
-
-                    // Aggiorniamo le statistiche in alto per il proprietario
-                    if (isProprietario) {
-                        if (Media != null) Media.setText(String.format("%.1f", (float) totale / n));
-                        if (Tot != null) Tot.setText(String.valueOf(n));
-                    }
+                if (isProprietario) {
+                    if (Media != null) Media.setText(String.format("%.1f", (float) totale / n));
+                    if (Tot != null) Tot.setText(String.valueOf(n));
                 }
             }
-            ListaRecensioni.revalidate();
-            ListaRecensioni.repaint();
         }
+        ListaRecensioni.revalidate();
+        ListaRecensioni.repaint();
+    }
 
     private void inviaRecensione() {
         String testo = TestoNuovaRecensione.getText().trim();
@@ -218,18 +251,9 @@ public class recensioniClient extends JDialog {
         }
     }
 
-    private void aggiungiPreferito() {
-        String[] pacchetto = {"AGGIUNGI_PREFERITO", nomeUtente, String.valueOf(idRistorante)};
-        String risposta = clientTK.inviaRichiesta(pacchetto);
-        if (risposta != null && risposta.startsWith("OK")) {
-            JOptionPane.showMessageDialog(this, risposta.substring(3), "Esito", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(this, risposta, "Errore", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
     private void apriPannelloRisposta(Recensione recensione) {
         JTextArea areaRisposta = new JTextArea(5, 30);
+        areaRisposta.setFont(new Font("SansSerif", Font.PLAIN, 12));
         areaRisposta.setLineWrap(true);
         areaRisposta.setWrapStyleWord(true);
         int risultato = JOptionPane.showConfirmDialog(
@@ -247,9 +271,10 @@ public class recensioniClient extends JDialog {
                 return;
             }
             clientTK.inviaRichiesta(new String[]{"RISPONDI_RECENSIONE", String.valueOf(recensione.getIdRecensione()), risposta});
-            caricaRecensioni(); // Ricarica le recensioni per visualizzare subito la risposta
+            caricaRecensioni();
         }
     }
+
     private void controllaStatoPreferito() {
         List<Ristorante> preferiti = clientTK.inviaRichiesta(new String[]{"GET_PREFERITI", nomeUtente});
         isPreferito = false;

@@ -1,7 +1,12 @@
 package gui;
 
 import com.mycompany.theknife.clientTK;
+
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -30,9 +35,10 @@ public class Login extends JFrame {
 
         setContentPane(mainPanel);
         setTitle("Login - TheKnife");
-
-        //la chiusura della pagina dalla X non viene gestita autonomamente, ma viene gestita dall'WindowAdapter
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+        // 1. Margini interni puliti
+        mainPanel.setBorder(new EmptyBorder(20, 25, 20, 25));
 
         // Intercettiamo il click sulla "X" in alto a destra
         addWindowListener(new WindowAdapter() {
@@ -42,14 +48,39 @@ public class Login extends JFrame {
             }
         });
 
+        // 2. Bordo moderno con padding interno per Username e Password
+        CompoundBorder campoTestoStyle = new CompoundBorder(
+                new LineBorder(new Color(189, 195, 199), 1, true),
+                new EmptyBorder(6, 10, 6, 10)
+        );
+        Font fontInput = new Font("SansSerif", Font.PLAIN, 12);
+
+        if (txtUsername != null) {
+            txtUsername.setFont(fontInput);
+            txtUsername.setBorder(campoTestoStyle);
+        }
+
+        if (txtPw != null) {
+            txtPw.setFont(fontInput);
+            txtPw.setBorder(campoTestoStyle);
+        }
+
+        // 3. Font e cursore dinamico per i pulsanti
+        Font btnFont = new Font("SansSerif", Font.BOLD, 12);
+
         if (accediButton != null) {
+            accediButton.setFont(btnFont);
+            accediButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
             accediButton.addActionListener(e -> gestisciLogin());
         }
 
         if (annullaButton != null) {
+            annullaButton.setFont(btnFont);
+            annullaButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
             annullaButton.addActionListener(e -> pulisciCampi());
         }
 
+        // 4. Adattamento compatto al layout nativo del form
         pack();
         setLocationRelativeTo(null);
     }
@@ -58,13 +89,9 @@ public class Login extends JFrame {
      * Raccoglie le credenziali, applica i filtri di validazione e delega l'invio al ClientTK.
      */
     private void gestisciLogin() {
-        // 1. Estrazione del testo inserito
         String username = txtUsername.getText().trim();
         String password = new String(txtPw.getPassword()).trim();
 
-        // 2. CONTROLLI FRONT-END (Validazione)
-
-        // Controllo 2.1: Campi vuoti
         if (username.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(
                     this,
@@ -72,12 +99,9 @@ public class Login extends JFrame {
                     "Attenzione: Credenziali Mancanti",
                     JOptionPane.WARNING_MESSAGE
             );
-            return; // Blocca l'esecuzione
+            return;
         }
 
-        // Controllo 2.2: Verifica struttura Password (Ottimizzazione di Rete)
-        // Se la password digitata non rispetta la nostra Regex, è inutile inviarla al Server
-        // perché sappiamo per certo che non corrisponderà a nessuna password valida nel nostro DB.
         if (!isPasswordSicura(password)) {
             JOptionPane.showMessageDialog(
                     this,
@@ -88,11 +112,9 @@ public class Login extends JFrame {
             return;
         }
 
-        // 3. INVIO AL SERVER TRAMITE IL GESTORE CENTRALIZZATO
         String[] pacchettoLogin = {"LOGIN", username, password};
         String messaggioServer = clientTK.inviaRichiesta(pacchettoLogin);
 
-        // 4. Gestione della risposta
         if (messaggioServer.startsWith("OK")) {
             JOptionPane.showMessageDialog(
                     this,
@@ -100,11 +122,10 @@ public class Login extends JFrame {
                     "Login Completato",
                     JOptionPane.INFORMATION_MESSAGE
             );
-            new homePageU(username,messaggioServer.substring(messaggioServer.indexOf("!")+1)).setVisible(true);
-            this.dispose(); // Chiude la finestra di login al successo
+            new homePageU(username, messaggioServer.substring(messaggioServer.indexOf("!") + 1)).setVisible(true);
+            this.dispose();
 
         } else {
-            // Se le credenziali sono davvero errate secondo il Database
             JOptionPane.showMessageDialog(
                     this,
                     messaggioServer,
@@ -114,20 +135,11 @@ public class Login extends JFrame {
         }
     }
 
-    /**
-     * Verifica che la password inserita rispetti i criteri strutturali di sicurezza di base.
-     *
-     * @param password La password in chiaro da controllare.
-     * @return true se strutturalmente potrebbe essere corretta, false se è sicuramente errata.
-     */
     private boolean isPasswordSicura(String password) {
         String regex = "^(?=.*[0-9])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,}$";
         return password.matches(regex);
     }
 
-    /**
-     * Chiede conferma all'utente e svuota i campi di testo.
-     */
     private void pulisciCampi() {
         int risposta = JOptionPane.showConfirmDialog(
                 this,
@@ -143,17 +155,11 @@ public class Login extends JFrame {
         }
     }
 
-
-    //Chiude la finestra corrente e riapre il menu principale (Home).
-
     private void tornaAllaHome() {
         new Home().setVisible(true);
         this.dispose();
     }
 
-    /**
-     * Metodo main per testare l'interfaccia.
-     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             new Login().setVisible(true);

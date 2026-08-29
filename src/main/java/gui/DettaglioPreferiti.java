@@ -3,8 +3,10 @@ package gui;
 import com.mycompany.theknife.clientTK;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 
-public class DettaglioPreferiti extends JDialog{
+public class DettaglioPreferiti extends JDialog {
     private JButton BottonRimuovi;
     private JLabel TestoRimuovi;
     private JPanel PanelDP;
@@ -18,11 +20,26 @@ public class DettaglioPreferiti extends JDialog{
         this.nomeUtente = nomeUtente;
 
         setContentPane(PanelDP);
-        setSize(400, 250);
+
+        // Spaziatura perimetrale
+        PanelDP.setBorder(new EmptyBorder(20, 25, 20, 25));
+
+        // Styling della label con testo centrato HTML
+        if (TestoRimuovi != null) {
+            TestoRimuovi.setText("<html><div style='text-align: center; font-family: sans-serif; font-size: 11pt; color: #2C3E50;'>" +
+                    "Vuoi rimuovere <b>" + nomeRistorante + "</b> dai preferiti?</div></html>");
+        }
+
+        // Styling del pulsante di rimozione (rosso)
+        if (BottonRimuovi != null) {
+            BottonRimuovi.setFont(new Font("SansSerif", Font.BOLD, 12));
+            BottonRimuovi.setForeground(new Color(192, 57, 43)); // Rosso per eliminazione
+            BottonRimuovi.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            BottonRimuovi.addActionListener(e -> rimuoviDaPreferiti());
+        }
+
+        pack(); // Adatta le dimensioni automaticamente
         setLocationRelativeTo(parent);
-
-
-        BottonRimuovi.addActionListener(e -> rimuoviDaPreferiti());
     }
 
     private void rimuoviDaPreferiti() {
@@ -43,5 +60,4 @@ public class DettaglioPreferiti extends JDialog{
             JOptionPane.showMessageDialog(this, risposta, "Errore", JOptionPane.ERROR_MESSAGE);
         }
     }
-
 }

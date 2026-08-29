@@ -4,7 +4,9 @@ import com.mycompany.theknife.clientTK;
 import modelli.Ristorante;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -25,8 +27,14 @@ public class MieiPreferiti extends JDialog {
         }
 
         setContentPane(panel1);
-        setSize(650, 500);
-        setLocationRelativeTo(parent);
+
+        // 1. Spaziatura perimetrale pulita
+        panel1.setBorder(new EmptyBorder(15, 20, 15, 20));
+
+        // 2. Intestazione in HTML elegante
+        if (TitoloPreferiti != null) {
+            TitoloPreferiti.setText("<html><h2 style='font-family: sans-serif; color: #2C3E50; margin: 0; padding-bottom: 5px;'>I tuoi ristoranti preferiti</h2></html>");
+        }
 
         String[] colonne = {"Id Ristorante", "Nome", "Città", "Nazione", "Fascia prezzo", "Tipo di cucina"};
         TabellaPreferiti.setModel(new DefaultTableModel(colonne, 0) {
@@ -36,6 +44,18 @@ public class MieiPreferiti extends JDialog {
             }
         });
         TabellaPreferiti.getTableHeader().setReorderingAllowed(false);
+
+        // 3. Styling avanzato della Tabella
+        TabellaPreferiti.setRowHeight(28);
+        TabellaPreferiti.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        TabellaPreferiti.setSelectionBackground(new Color(232, 240, 254));
+        TabellaPreferiti.setSelectionForeground(Color.BLACK);
+
+        TabellaPreferiti.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
+        TabellaPreferiti.getTableHeader().setBackground(new Color(240, 243, 244));
+        TabellaPreferiti.getTableHeader().setForeground(new Color(44, 62, 80));
+        TabellaPreferiti.setGridColor(new Color(225, 230, 235));
+        TabellaPreferiti.setShowGrid(true);
 
         TabellaPreferiti.addMouseListener(new MouseAdapter() {
             @Override
@@ -58,6 +78,10 @@ public class MieiPreferiti extends JDialog {
         });
 
         caricaPreferiti();
+
+        // Impostiamo una dimensione fissa spaziosa per far respirare la tabella
+        setSize(700, 450);
+        setLocationRelativeTo(parent);
     }
 
     private void caricaPreferiti() {

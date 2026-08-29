@@ -4,6 +4,10 @@ import com.mycompany.theknife.clientTK;
 import modelli.Ristorante;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import java.awt.*;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -32,6 +36,9 @@ public class dialogFiltri extends JDialog {
 
         setContentPane(mainPanel);
 
+        // 1. Spaziatura perimetrale della finestra
+        mainPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
+
         fixSlider();
         fixBottoni();
         fixStelle();
@@ -39,14 +46,43 @@ public class dialogFiltri extends JDialog {
         prezzoMax.setText("100");
         fixTipiCucina();
 
+        // 2. Styling dei componenti (Bordi, Font e Cursori)
+        Font baseFont = new Font("SansSerif", Font.PLAIN, 12);
+        Font btnFont = new Font("SansSerif", Font.BOLD, 12);
+        CompoundBorder textStyle = new CompoundBorder(
+                new LineBorder(new Color(189, 195, 199), 1, true),
+                new EmptyBorder(4, 8, 4, 8)
+        );
+
+        if (prezzoMin != null) { prezzoMin.setFont(baseFont); prezzoMin.setBorder(textStyle); }
+        if (prezzoMax != null) { prezzoMax.setFont(baseFont); prezzoMax.setBorder(textStyle); }
+
+        if (numeroStelle != null) { numeroStelle.setFont(baseFont); numeroStelle.setCursor(new Cursor(Cursor.HAND_CURSOR)); }
+        if (tipiCucina != null) { tipiCucina.setFont(baseFont); tipiCucina.setCursor(new Cursor(Cursor.HAND_CURSOR)); }
+        if (raggioRicerca != null) { raggioRicerca.setFont(baseFont); raggioRicerca.setCursor(new Cursor(Cursor.HAND_CURSOR)); }
+
+        // Styling dei Radio Button
+        JRadioButton[] radios = {deliveryS, deliveryN, deliveryI, prenotazioneS, prenotazioneN, prenotazioneI};
+        for (JRadioButton rb : radios) {
+            if (rb != null) {
+                rb.setFont(baseFont);
+                rb.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+        }
+
+        // Styling dei Pulsanti
         if (ricercaButton != null) {
+            ricercaButton.setFont(btnFont);
+            ricercaButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
             ricercaButton.addActionListener(e -> applicaFiltri());
         }
         if (resetButton != null) {
+            resetButton.setFont(btnFont);
+            resetButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
             resetButton.addActionListener(e -> resetScelte());
         }
 
-        pack();
+        pack(); // Compatta gli spazi in automatico
         setLocationRelativeTo(padre);
     }
 
@@ -100,25 +136,14 @@ public class dialogFiltri extends JDialog {
 
     public void applicaFiltri() {
         String filtriScelti = "";
-        int cont = 0; // Contatore per controllare se l'utente non ha modificato nessun parametro dei filtri
+        int cont = 0;
 
         switch (raggioRicerca.getValue()) {
-            case 0:
-                filtriScelti = "5/" + posUtente + "=";
-                break;
-            case 1:
-                filtriScelti = "10/" + posUtente + "=";
-                break;
-            case 2:
-                filtriScelti = "20/" + posUtente + "=";
-                break;
-            case 3:
-                filtriScelti = "50/" + posUtente + "=";
-                break;
-            case 4:
-                filtriScelti = "Qualsiasi=";
-                cont++;
-                break;
+            case 0: filtriScelti = "5/" + posUtente + "="; break;
+            case 1: filtriScelti = "10/" + posUtente + "="; break;
+            case 2: filtriScelti = "20/" + posUtente + "="; break;
+            case 3: filtriScelti = "50/" + posUtente + "="; break;
+            case 4: filtriScelti = "Qualsiasi="; cont++; break;
         }
 
         String s1 = prezzoMin.getText().trim();
@@ -159,7 +184,6 @@ public class dialogFiltri extends JDialog {
         if (deliveryI.isSelected() && prenotazioneI.isSelected()) cont += 2;
         if (numeroStelle.getSelectedIndex() == 0) cont++;
 
-        // Se arriva a 6 significa che vuole vedere tutti i ristoranti senza filtrarli
         if (cont == 6) {
             ristorantiFiltrati = clientTK.inviaRichiesta(new String[]{"RISTORANTI", "TUTTI"});
             this.dispose();
@@ -186,10 +210,7 @@ public class dialogFiltri extends JDialog {
         }
 
         filtriScelti += String.valueOf(numeroStelle.getSelectedIndex());
-
-        System.out.println("Filtri inviati: " + filtriScelti);
         ristorantiFiltrati = clientTK.inviaRichiesta(new String[]{"RISTORANTI", filtriScelti, posUtente});
-
         this.dispose();
     }
 
@@ -203,11 +224,11 @@ public class dialogFiltri extends JDialog {
         );
 
         if (risposta == JOptionPane.YES_OPTION) {
-            raggioRicerca.setValue(4); // Imposta su "Qualsiasi" di default
+            raggioRicerca.setValue(4);
             prezzoMin.setText("1");
             prezzoMax.setText("100");
-            deliveryI.setSelected(true); // Indifferente
-            prenotazioneI.setSelected(true); // Indifferente
+            deliveryI.setSelected(true);
+            prenotazioneI.setSelected(true);
             numeroStelle.setSelectedIndex(0);
             tipiCucina.setSelectedIndex(0);
         }
