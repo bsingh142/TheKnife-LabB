@@ -25,7 +25,6 @@ public class richiestaPosGuest extends JDialog{
 
         pack();
         setLocationRelativeTo(padre);
-        this.setVisible(true);
     }
 
     private void apriHomePageU(){

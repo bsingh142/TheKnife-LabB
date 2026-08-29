@@ -22,6 +22,7 @@ public class homePageU extends JFrame {
     private JButton bottoneFiltri;
     private JButton eliminaButton;
     private JButton buttonReset;
+    private JButton esciOspiteButton;
     private String posizioneUtente;
     private static String username;
     private Utente u;
@@ -29,6 +30,10 @@ public class homePageU extends JFrame {
     public homePageU(String nomeUtente, String pos) {
         if (mainPanel == null) {
             throw new IllegalStateException("Il mainPanel non è stato associato correttamente nel file homePageU.form");
+        }
+        //bottone esci nascosto per utenti loggati
+        if (esciOspiteButton != null) {
+            esciOspiteButton.setVisible(false);
         }
 
         this.posizioneUtente = pos;
@@ -74,6 +79,13 @@ public class homePageU extends JFrame {
 
         if (nomeUtente == null) {
             labelUsername.setVisible(false);
+            if (esciOspiteButton != null) {
+                esciOspiteButton.setVisible(true); // Lo mostra all'ospite
+                esciOspiteButton.addActionListener(e -> {
+                    this.dispose(); // Chiude la pagina dei ristoranti
+                    new Home().setVisible(true); // Torna al menu principale
+                });
+            }
         } else {
             labelUsername.setText(nomeUtente);
             labelUsername.addMouseListener(new MouseAdapter() {
@@ -157,8 +169,20 @@ public class homePageU extends JFrame {
         });
 
         logout.addActionListener(e -> {
-            System.out.println("LOGOUT");
-            // Se vuoi, qui potresti fare this.dispose() e riaprire new Home().setVisible(true)
+            // Chiediamo conferma all'utente
+            int conferma = JOptionPane.showConfirmDialog(
+                    parent,
+                    "Sei sicuro di voler effettuare il logout?",
+                    "Conferma Logout",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE
+            );
+
+            // Se clicca "Sì" (YES)
+            if (conferma == JOptionPane.YES_OPTION) {
+                parent.dispose(); // Chiude la homePageU
+                new Home().setVisible(true); // Riapre la schermata principale iniziale
+            }
         });
 
         menuTendina.add(preferiti);

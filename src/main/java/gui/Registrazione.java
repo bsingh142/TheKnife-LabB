@@ -130,7 +130,7 @@ public class Registrazione extends JFrame {
         //3. Controllo del domicilio inserito dall'utente
         String[] richiesta = {"POSIZIONE",domicilioC,domicilioN};
         String rispServer = clientTK.inviaRichiesta(richiesta);
-        if(rispServer.startsWith("ERRORE:")){
+        if(rispServer == null || rispServer.startsWith("ERRORE:")){
             JOptionPane.showMessageDialog(this,"Attenzione: Il domicilio non è valido","Domicilio non valido",JOptionPane.WARNING_MESSAGE);
             return;
         }
