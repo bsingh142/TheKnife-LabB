@@ -15,6 +15,7 @@ import com.mycompany.theknife.clientTK;
 import modelli.Ristorante;
 import modelli.Utente;
 
+/// Classe per la gestione della finestra che mostra la lista dei ristoranti
 public class homePageU extends JFrame {
 
     private JPanel mainPanel;
@@ -28,6 +29,9 @@ public class homePageU extends JFrame {
     private static String username;
     private Utente u;
 
+    /// @param nomeUtente String username utente
+    /// @param pos String posizione utente formato latitudine/longitudine
+    /// Si occupa di inizializzare la schermata in base alla tipologia di utente
     public homePageU(String nomeUtente, String pos) {
         if (mainPanel == null) {
             throw new IllegalStateException("Il mainPanel non è stato associato correttamente nel file homePageU.form");
@@ -216,6 +220,9 @@ public class homePageU extends JFrame {
         }
     }
 
+    /// @param parent JFrame genitore
+    /// @param nomeUtente String username
+    /// @return Il menu a tendina che si apre premendo sul nome utente
     public JPopupMenu creaMenu(JFrame parent, String nomeUtente) {
         JPopupMenu menuTendina = new JPopupMenu();
         JMenuItem logout = new JMenuItem("Logout");
@@ -270,6 +277,9 @@ public class homePageU extends JFrame {
         return menuTendina;
     }
 
+    /// @param table Jtable la tabella da riempire
+    /// @param richiesta String[] stringa che indica quali ristoranti inserire
+    /// Riempe la tabella fornita con tutti i ristoranti che corrispondono alla richiesta
     public static void riempiTabella(JTable table, String[] richiesta) {
         DefaultTableModel dtm = (DefaultTableModel) table.getModel();
         dtm.setRowCount(0);
@@ -293,6 +303,9 @@ public class homePageU extends JFrame {
         }
     }
 
+    /// @param table JTable la tabella su cui applicare i filtri
+    /// @param ristoranti List<Ristorante> i ristoranti con cui popolare la tablella
+    /// Popola la tabella fornita con la lista fornita
     public static void applicaFiltri(JTable table, List<Ristorante> ristoranti) {
         DefaultTableModel dtm = (DefaultTableModel) table.getModel();
         dtm.setRowCount(0);
@@ -314,6 +327,8 @@ public class homePageU extends JFrame {
         }
     }
 
+    /// @param username String username dell'utente
+    /// Popola la tabella con solo ristoranti posseduti dall'utente
     private void proprietario(String username) {
         List<Ristorante> list = clientTK.inviaRichiesta(new String[]{"PROPRIETARIO", username});
         if (list == null) list = new ArrayList<>();
@@ -321,17 +336,19 @@ public class homePageU extends JFrame {
         //if (buttonReset != null) buttonReset.setText("Indietro");
     }
 
+    /// Apre la finestra per l'inserimento di un nuovo ristorante
     private void inserisci() {
         // Passiamo la Home al form di aggiunta
         AddRistorante addr = new AddRistorante(username, homePageU.this);
         addr.setVisible(true);
     }
 
-    // Metodo PUBBLICO per far riaggiornare la tabella dall'esterno
+    /// Metodo PUBBLICO per far riaggiornare la tabella dall'esterno
     public void aggiornaVistaProprietario() {
         proprietario(username);
     }
 
+    /// Mostra un messaggio di conferma prima di uscire dall'applicazione
     private void confermaUscita() {
         int risposta = JOptionPane.showConfirmDialog(
                 this,

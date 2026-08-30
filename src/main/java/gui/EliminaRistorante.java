@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import com.mycompany.theknife.clientTK;
 
+/// Classe per la gestione della finestra di dialogo che consente l'eliminazione di un ristorante
 public class EliminaRistorante extends JFrame {
     private JTextField txtid;
     private JButton elimina;
@@ -17,6 +18,8 @@ public class EliminaRistorante extends JFrame {
     private String username;
     private homePageU homeParent; // Riferimento alla Home
 
+    /// @param u String username del ristoratore
+    /// @param parent homePageU riferimento alla home
     public EliminaRistorante(String u, homePageU parent){
         this.username = u;
         this.homeParent = parent;
@@ -51,7 +54,7 @@ public class EliminaRistorante extends JFrame {
             elimina.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    verificaElimazione(txtid.getText());
+                    verificaEliminazione(txtid.getText());
                 }
             });
         }
@@ -61,7 +64,9 @@ public class EliminaRistorante extends JFrame {
         setLocationRelativeTo(parent);
     }
 
-    private void verificaElimazione(String id){
+    /// @param id String contenente id del ristorante da eliminare
+    /// Controlla che il valore inserito sia valido e poi procede a eliminare il ristorante dal db
+    private void verificaEliminazione(String id){
         if(id == null || id.trim().isEmpty()){
             JOptionPane.showMessageDialog(this, "Inserisci un ID.", "Valore non inserito", JOptionPane.ERROR_MESSAGE);
             return;

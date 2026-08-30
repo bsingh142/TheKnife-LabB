@@ -9,6 +9,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 
+/// Permette ad un utente di visualizzare, modificare, eliminare una recensione da lui pubblicata.
 public class DettaglioRecensione extends JDialog {
     private JPanel mainPanel;
     private JLabel lblRistorante;
@@ -20,6 +21,10 @@ public class DettaglioRecensione extends JDialog {
     private final Recensione recensione;
     private final String nomeUtente;
 
+    /// @param parent JFrame genitore
+    /// @param recensione Recensione da visualizzare
+    /// @param nomeUtente String username utente
+    /// @param nomeRistorante String nome ristorante
     public DettaglioRecensione(JFrame parent, Recensione recensione, String nomeUtente, String nomeRistorante) {
         super(parent, "Modifica recensione", true);
         this.recensione = recensione;
@@ -69,6 +74,7 @@ public class DettaglioRecensione extends JDialog {
         btnElimina.addActionListener(e -> eliminaRecensione());
     }
 
+    /// Consente la modifica del testo della recensione.
     private void salvaModifiche() {
         String testo = txtTesto.getText().trim();
         if (testo.isEmpty()) {
@@ -94,6 +100,7 @@ public class DettaglioRecensione extends JDialog {
         }
     }
 
+    /// Consente di eliminare la recensione.
     private void eliminaRecensione() {
         int conferma = JOptionPane.showConfirmDialog(this,
                 "Sei sicuro di voler eliminare questa recensione?",

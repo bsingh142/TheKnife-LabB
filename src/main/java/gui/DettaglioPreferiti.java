@@ -6,6 +6,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
+/// Classe che gestisce la finestra per la rimozione di ristoranti dalla lista preferiti.
 public class DettaglioPreferiti extends JDialog {
     private JButton BottonRimuovi;
     private JLabel TestoRimuovi;
@@ -14,6 +15,10 @@ public class DettaglioPreferiti extends JDialog {
     private final int idRistorante;
     private final String nomeUtente;
 
+    /// @param parent Jdialog padre
+    /// @param idRistorante int id del ristorante
+    /// @param nomeRistorante String nome del ristorante
+    /// @param nomeUtente String username dell' utente
     public DettaglioPreferiti(JDialog parent, int idRistorante, String nomeRistorante, String nomeUtente) {
         super(parent, "Elimina ristorante preferito", true);
         this.idRistorante = idRistorante;
@@ -42,6 +47,7 @@ public class DettaglioPreferiti extends JDialog {
         setLocationRelativeTo(parent);
     }
 
+    /// Effetua l' eliminazione del ristorante dai preferiti.
     private void rimuoviDaPreferiti() {
         int conferma = JOptionPane.showConfirmDialog(this,
                 "Sei sicuro di voler rimuovere questo ristorante dai preferiti?",

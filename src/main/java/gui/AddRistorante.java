@@ -11,6 +11,8 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+/// Classe per la gestione della finestra di dialogo che consente l' inserimento dei dati
+/// per la registrazione di un nuovo ristorante.
 public class AddRistorante extends JFrame {
     private String username;
     private JPanel mainPanel;
@@ -27,6 +29,9 @@ public class AddRistorante extends JFrame {
 
     private homePageU homeParent; // Riferimento alla Home
 
+    /// @param u Stringa con nome utente
+    /// @param parent Riferimento alla home
+    /// Si occupa di preparare la gui per l'inserimento dei dati di un nuovo ristorante.
     public AddRistorante(String u, homePageU parent) {
         this.username = u;
         this.homeParent = parent;
@@ -94,6 +99,7 @@ public class AddRistorante extends JFrame {
         setLocationRelativeTo(parent);
     }
 
+    /// Mostra una finestra di dialogo per confermare il reset dei dati inseriti per poi procedere con la cancellazione.
     private void pulisciCampi() {
         int risposta = JOptionPane.showConfirmDialog(
                 this,
@@ -107,6 +113,7 @@ public class AddRistorante extends JFrame {
         }
     }
 
+    /// Effettua il reset.
     private void svuotaInterfaccia() {
         txtNome.setText("");
         txtindirizzo.setText("");
@@ -122,6 +129,7 @@ public class AddRistorante extends JFrame {
         }
     }
 
+    /// Si occupa della gestione dei dati inseriti dall' utente e poi procede a registrare il ristorante nel database.
     private void gestisciAggiunta() {
         String nome = txtNome.getText().trim();
         String indirizzo = txtindirizzo.getText().trim();

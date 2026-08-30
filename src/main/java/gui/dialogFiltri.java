@@ -11,6 +11,7 @@ import java.awt.*;
 import java.util.Hashtable;
 import java.util.List;
 
+/// Classe che si occupa della gestione della finestra per l' inserimento dei filtri di ricerca
 public class dialogFiltri extends JDialog {
     private JPanel mainPanel;
     private JButton ricercaButton;
@@ -30,6 +31,8 @@ public class dialogFiltri extends JDialog {
     private String posUtente;
     private List<Ristorante> ristorantiFiltrati;
 
+    /// @param padre JFrame padre
+    /// @param posUtente String posizione utente formato latitudine/longitudine
     public dialogFiltri(JFrame padre, String posUtente) {
         super(padre, "Filtri ristoranti", true);
         this.posUtente = posUtente;
@@ -86,6 +89,7 @@ public class dialogFiltri extends JDialog {
         setLocationRelativeTo(padre);
     }
 
+    /// Inizializza i valori degli slider
     public void fixSlider() {
         raggioRicerca.setMinimum(0);
         raggioRicerca.setMaximum(4);
@@ -103,6 +107,7 @@ public class dialogFiltri extends JDialog {
         raggioRicerca.setLabelTable(indici);
     }
 
+    /// Inizializza i bottoni
     public void fixBottoni() {
         ButtonGroup delivery = new ButtonGroup();
         delivery.add(deliveryS);
@@ -117,6 +122,7 @@ public class dialogFiltri extends JDialog {
         prenotazioneI.setSelected(true);
     }
 
+    /// Inizializza le stelle
     public void fixStelle() {
         numeroStelle.addItem("Qualsiasi");
         numeroStelle.addItem(1);
@@ -126,6 +132,7 @@ public class dialogFiltri extends JDialog {
         numeroStelle.addItem(5);
     }
 
+    /// Inizializza i tipi di cucina
     public void fixTipiCucina() {
         tipiCucina.addItem("Qualsiasi");
         List<String> risultati = clientTK.inviaRichiesta(new String[]{"TIPI_CUCINA"});
@@ -134,6 +141,7 @@ public class dialogFiltri extends JDialog {
         }
     }
 
+    /// Ottine la lista di ristoranti che corrispondono ai filtri applicati dopo aver verificato la validità degli stessi.
     public void applicaFiltri() {
         String filtriScelti = "";
         int cont = 0;
@@ -214,6 +222,7 @@ public class dialogFiltri extends JDialog {
         this.dispose();
     }
 
+    /// Riporta i valori scelti ai loro valori di inizializzazione
     public void resetScelte() {
         int risposta = JOptionPane.showConfirmDialog(
                 this,
@@ -234,6 +243,7 @@ public class dialogFiltri extends JDialog {
         }
     }
 
+    /// @return Lista di ristoranti ottenuta
     public List<Ristorante> getRistorantiFiltrati() {
         return ristorantiFiltrati;
     }
