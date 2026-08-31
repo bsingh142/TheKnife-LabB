@@ -11,6 +11,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
+/// Gestisce la finestra che mostra i ristoranti preferiti
 public class MieiPreferiti extends JDialog {
     private JPanel panel1;
     private JLabel TitoloPreferiti;
@@ -18,6 +19,8 @@ public class MieiPreferiti extends JDialog {
 
     private final String nomeUtente;
 
+    /// @param parent JFrame genitore
+    /// @param nomeUtente String nome utente
     public MieiPreferiti(JFrame parent, String nomeUtente) {
         super(parent, "Ristoranti preferiti", true);
         this.nomeUtente = nomeUtente;
@@ -84,6 +87,7 @@ public class MieiPreferiti extends JDialog {
         setLocationRelativeTo(parent);
     }
 
+    /// Crea e riempie la tabella dei ristoranti preferiti
     private void caricaPreferiti() {
         DefaultTableModel dtm = (DefaultTableModel) TabellaPreferiti.getModel();
         dtm.setRowCount(0);

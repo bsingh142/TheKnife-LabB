@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+/// Gestisce la finestra per la registrazione di un nuovo utente
 public class Registrazione extends JFrame {
 
     private JPanel mainPanel;
@@ -28,6 +29,7 @@ public class Registrazione extends JFrame {
     private JButton annullaButton;
     private JTextField txtDomicilioN;
 
+    /// Costruttore per la classe Registrazione
     public Registrazione() {
         if (mainPanel == null) {
             throw new IllegalStateException("Il mainPanel non è stato associato correttamente");
@@ -92,6 +94,7 @@ public class Registrazione extends JFrame {
         setLocationRelativeTo(null);
     }
 
+    /// Mostra un messaggio per confermare il ripristino dei valori base
     private void pulisciCampi() {
         int risposta = JOptionPane.showConfirmDialog(
                 this,
@@ -106,6 +109,7 @@ public class Registrazione extends JFrame {
         }
     }
 
+    /// Ripristina tutti i campi ai loro valori base
     private void svuotaInterfaccia() {
         txtNome.setText("");
         txtCognome.setText("");
@@ -119,6 +123,8 @@ public class Registrazione extends JFrame {
         }
     }
 
+    /// Racoglie i dati inseriti dall'utente, li controlla e procede alla creazione e registrazione
+    /// presso il db di un nuovo utente.
     private void gestisciRegistrazione() {
         String nome = txtNome.getText().trim();
         String cognome = txtCognome.getText().trim();
@@ -174,11 +180,15 @@ public class Registrazione extends JFrame {
         }
     }
 
+    /// @param password Stringa contenente la password
+    /// @return Boolean contenente se la password rispetta le condizioni di accettazione
     private boolean isPasswordSicura(String password) {
         String regex = "^(?=.*[0-9])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,}$";
         return password.matches(regex);
     }
 
+    /// @param dataStringa Stringa contenente la data
+    /// @return boolean mostra se la data è in un formato accettabile
     private boolean isDataValida(String dataStringa) {
         if (dataStringa == null || dataStringa.isEmpty()) {
             return true;
@@ -193,6 +203,7 @@ public class Registrazione extends JFrame {
         }
     }
 
+    /// Permette di ritornare alla schermata home
     private void tornaAllaHome() {
         new Home().setVisible(true);
         this.dispose();

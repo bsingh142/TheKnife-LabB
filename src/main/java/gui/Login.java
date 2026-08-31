@@ -135,11 +135,14 @@ public class Login extends JFrame {
         }
     }
 
+    /// @param password Stringa contenente la password
+    /// @return Boolean, se la password è accettabile
     private boolean isPasswordSicura(String password) {
         String regex = "^(?=.*[0-9])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,}$";
         return password.matches(regex);
     }
 
+    /// Mostra un messaggio per confermare il ripristino dei dati inseriti
     private void pulisciCampi() {
         int risposta = JOptionPane.showConfirmDialog(
                 this,
@@ -155,6 +158,7 @@ public class Login extends JFrame {
         }
     }
 
+    /// Permette di ritornare alla home
     private void tornaAllaHome() {
         new Home().setVisible(true);
         this.dispose();

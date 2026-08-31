@@ -21,7 +21,7 @@ public class Utente implements Serializable {
 
     /**
      * Costruttore completo: utilizzato per creare un nuovo oggetto Utente
-     * fornendo tutti i dati in un colpo solo.
+     * fornendo tutti i dati insieme.
      */
     public Utente(String nome, String cognome, String username, String pwd, String dob, Double lat,Double lon, String ruolo) {
         this.nome = nome;

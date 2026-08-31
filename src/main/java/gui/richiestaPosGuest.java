@@ -7,6 +7,7 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import com.mycompany.theknife.clientTK;
 
+/// Gestisce la schermata per l'inserimento della posizione degli utenti guest
 public class richiestaPosGuest extends JDialog {
     private JPanel mainPanel;
     private JTextField nomeCitta;
@@ -16,6 +17,7 @@ public class richiestaPosGuest extends JDialog {
     // Variabile mantenuta dal branch "modifiche" per chiudere la Home correttamente
     private boolean successo = false;
 
+    /// @param padre J_Frame padre
     public richiestaPosGuest(JFrame padre) {
         super(padre, "Inserisci Posizione", true);
 
@@ -57,6 +59,8 @@ public class richiestaPosGuest extends JDialog {
         setLocationRelativeTo(padre);
     }
 
+    /// Controlla i valori inseriti e se sono accettabili procede all'apertura
+    /// della schermata homepage
     private void apriHomePageU() {
         String citta = (nomeCitta != null) ? nomeCitta.getText().trim() : "";
         String nazione = (nomeNazione != null) ? nomeNazione.getText().trim() : "";
@@ -97,7 +101,7 @@ public class richiestaPosGuest extends JDialog {
         this.dispose();
     }
 
-    // Metodo getter necessario alla classe Home
+    /// Metodo getter necessario alla classe Home
     public boolean getSuccesso() {
         return successo;
     }

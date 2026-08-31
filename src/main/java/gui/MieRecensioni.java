@@ -7,12 +7,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
+/// Classe per la gestione della finestra che mostra le proprie recensioni
 public class MieRecensioni extends JDialog {
     private JPanel Lista;                  // mainPanel del form
     private JPanel ListaMiaRecensioni;     // pannello dentro lo scroll, dove aggiungiamo le card
 
     private final String nomeUtente;
 
+    /// @param parent JFrame genitore
+    /// @param nomeUtente String nome utente
     public MieRecensioni(JFrame parent, String nomeUtente) {
         super(parent, "Recensioni", true);
         this.nomeUtente = nomeUtente;
@@ -30,6 +33,7 @@ public class MieRecensioni extends JDialog {
         caricaMieRecensioni();
     }
 
+    /// Crea e popola la tabella delle proprie recensioni
     private void caricaMieRecensioni() {
         ListaMiaRecensioni.removeAll();
 

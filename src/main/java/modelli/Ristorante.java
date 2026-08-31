@@ -5,6 +5,7 @@ import java.io.Serializable;
 /**
  * Questa classe rappresenta un Ristorante nel sistema TheKnife.
  * Mappa tutti i campi della tabella 'ristorantitheknife' del database.
+ * Implementa l'interfaccia Serializable per permettere l'invio dell'oggetto tramite Socket.
  */
 public class Ristorante implements Serializable {
 

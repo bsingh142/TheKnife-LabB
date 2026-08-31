@@ -10,6 +10,9 @@ import com.mycompany.theknife.clientTK;
 import java.awt.*;
 import java.util.List;
 
+/// Classe che gestisce la finestra per l'inserimento di una nuova recensione
+/// visualizzazione recensioni altrui e aggiunta ai preferiti.
+/// Consente al ristoratore di rispondere alle recensioni.
 public class recensioniClient extends JDialog {
     private JPanel mainPanel;
     private JLabel NomeRistorante;
@@ -36,6 +39,10 @@ public class recensioniClient extends JDialog {
     private boolean isProprietario = false;
     private boolean isPreferito = false;
 
+    /// @param parent JFrame genitore
+    /// @param idRistorante int id del ristorante
+    /// @param nomeRistoranteText String nome ristorante
+    /// @param nomeUtente String nome utente
     public recensioniClient(JFrame parent, int idRistorante, String nomeRistoranteText, String nomeUtente) {
         super(parent, "Recensioni - " + nomeRistoranteText, true);
         this.idRistorante = idRistorante;
@@ -147,6 +154,7 @@ public class recensioniClient extends JDialog {
         setLocationRelativeTo(parent);
     }
 
+    /// Crea e popola la lista delle recensioni altrui
     private void caricaRecensioni() {
         ListaRecensioni.removeAll();
         int n = 0, totale = 0;
@@ -241,6 +249,7 @@ public class recensioniClient extends JDialog {
         ListaRecensioni.repaint();
     }
 
+    /// Controlla e invia la recensione appena scritta al db
     private void inviaRecensione() {
         String testo = TestoNuovaRecensione.getText().trim();
         if (testo.isEmpty()) {
@@ -260,6 +269,8 @@ public class recensioniClient extends JDialog {
         }
     }
 
+    /// @param recensione La recensione a cui rispondere
+    /// Apre il pannello da cui il ristoratore può rispondere alla recensione
     private void apriPannelloRisposta(Recensione recensione) {
         JTextArea areaRisposta = new JTextArea(5, 30);
         areaRisposta.setFont(new Font("SansSerif", Font.PLAIN, 12));
@@ -284,6 +295,8 @@ public class recensioniClient extends JDialog {
         }
     }
 
+    /// Controlla se il ristorante è già un prefererito e aggiorna il bottone per aggiunta o
+    /// rimozione preferito di conseguenza
     private void controllaStatoPreferito() {
         List<Ristorante> preferiti = clientTK.inviaRichiesta(new String[]{"GET_PREFERITI", nomeUtente});
         isPreferito = false;
@@ -298,12 +311,14 @@ public class recensioniClient extends JDialog {
         aggiornaTestoBottonePreferiti();
     }
 
+    /// Effettua l'aggiornamento del testo nel bottone preferiti
     private void aggiornaTestoBottonePreferiti() {
         if (PreferitiButton != null) {
             PreferitiButton.setText(isPreferito ? "Rimuovi dai preferiti" : "Aggiungi ai preferiti");
         }
     }
 
+    /// Modifica l'effetto del bottone preferiti in base al valore di isPreferito
     private void gestisciPreferito() {
         if (isPreferito) {
             String[] pacchetto = {"RIMUOVI_PREFERITO", nomeUtente, String.valueOf(idRistorante)};
@@ -328,6 +343,8 @@ public class recensioniClient extends JDialog {
         }
     }
 
+    /// @param id int id del ristorante
+    /// @return String contiene quante recensioni sono presenti per questo ristorante e la loro media di stelle
     private String getInfoRistorante(int id){
         return clientTK.inviaRichiesta(new String[]{"INFO_RISTORANTE",String.valueOf(idRistorante)});
     }
