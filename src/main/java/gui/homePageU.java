@@ -220,9 +220,13 @@ public class homePageU extends JFrame {
         }
     }
 
-    /// @param parent JFrame genitore
-    /// @param nomeUtente String username
-    /// @return Il menu a tendina che si apre premendo sul nome utente
+    /**
+     * Crea il menu a tendina che si apre cliccando sul nome utente
+     * @param parent JFrame genitore
+     * @param nomeUtente String username
+     * @return Il menu a tendina che si apre premendo sul nome utente
+     */
+
     public JPopupMenu creaMenu(JFrame parent, String nomeUtente) {
         JPopupMenu menuTendina = new JPopupMenu();
         JMenuItem logout = new JMenuItem("Logout");
@@ -277,9 +281,11 @@ public class homePageU extends JFrame {
         return menuTendina;
     }
 
-    /// @param table Jtable la tabella da riempire
-    /// @param richiesta String[] stringa che indica quali ristoranti inserire
-    /// Riempe la tabella fornita con tutti i ristoranti che corrispondono alla richiesta
+    /**
+     * Riempe la tabella fornita con tutti i ristoranti che corrispondono alla richiesta
+     *  @param table Jtable la tabella da riempire
+     *  @param richiesta String[] stringa che indica quali ristoranti inserire
+     */
     public static void riempiTabella(JTable table, String[] richiesta) {
         DefaultTableModel dtm = (DefaultTableModel) table.getModel();
         dtm.setRowCount(0);
@@ -303,9 +309,11 @@ public class homePageU extends JFrame {
         }
     }
 
-    /// @param table JTable la tabella su cui applicare i filtri
-    /// @param ristoranti List<Ristorante> i ristoranti con cui popolare la tablella
-    /// Popola la tabella fornita con la lista fornita
+    /**
+     * Popola la tabella fornita con la lista fornita
+     * @param table JTable la tabella su cui applicare i filtri
+     * @param ristoranti List i ristoranti con cui popolare la tablella
+     */
     public static void applicaFiltri(JTable table, List<Ristorante> ristoranti) {
         DefaultTableModel dtm = (DefaultTableModel) table.getModel();
         dtm.setRowCount(0);
@@ -327,8 +335,10 @@ public class homePageU extends JFrame {
         }
     }
 
-    /// @param username String username dell'utente
-    /// Popola la tabella con solo ristoranti posseduti dall'utente
+    /**
+     * Popola la tabella con solo ristoranti posseduti dall'utente
+     * @param username String username dell'utente
+     */
     private void proprietario(String username) {
         List<Ristorante> list = clientTK.inviaRichiesta(new String[]{"PROPRIETARIO", username});
         if (list == null) list = new ArrayList<>();

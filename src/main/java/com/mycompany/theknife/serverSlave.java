@@ -44,6 +44,7 @@ public class serverSlave extends Thread {
         }
     }
 
+    ///Metodo con cui lo slave riceve pacchetti, analizza la richiesta e tramite switch delega al gestore database
     @Override
     public void run() {
         System.out.println("[SLAVE " + getId() + "] Gestione client in corso...");
@@ -150,6 +151,14 @@ public class serverSlave extends Thread {
         }
     }
 
+
+    /** Gestisce una richiesta di registrazione di un nuovo utente.
+     * Il metodo registra nel database l'utente ricevuto, utilizzando le
+     * credenziali e l'URL di connessione al database configurati nella classe.
+     * Al termine della registrazione, l'esito dell'operazione viene inviato al client.
+     * @param utente Utente pacchetto utente da registrare
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output
+     */
     private void gestisciRegistrazione(Utente utente) throws IOException {
         System.out.println("[SLAVE " + getId() + "] Richiesta di REGISTRAZIONE per: " + utente.getUsername());
         String risposta = GestoreDatabase.registraUtente(utente, urlDB, userDB, passDB);
@@ -157,6 +166,10 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
+    /// Gestisce una richiesta di login di un utente.
+    /// Al termine del login, l'esito dell'operazione viene inviato al client.
+    /// @param pacchetto String[] contenente username e password
+    /// @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output
     private void gestisciLogin(String[] pacchetto) throws IOException {
         String username = pacchetto[1];
         String password = pacchetto[2];
@@ -166,18 +179,28 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
+    /// Invia una lista contenente i ristoranti filtrati al client
+    /// @param richiesta String contente i filtri da applicare
+    /// @param posU String contente la posizione dell'utente nel formato latitudine/longitudine
+    /// @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output
     private void gestisciRistoranti(String richiesta,String posU) throws IOException {
         List<Ristorante> risultati=GestoreDatabase.ricercaRistoranti(richiesta,posU, urlDB,userDB,passDB);
         output.writeObject(risultati);
         output.flush();
     }
 
+    /// Invia una stringa al client contenente latitudine/longitudine
+    /// @param pacchetto String[] contenente città e nazione
+    /// @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output
     private void gestisciPosizione(String[] pacchetto) throws IOException {
         String risp=GestoreDatabase.ricercaPosizione(pacchetto[1],pacchetto[2]);
         output.writeObject(risp);
         output.flush();
     }
 
+    /// Invia una stringa al client contenente latitudine/longitudine
+    /// @param pacchetto String[] contenente: [0] comando, [1] indirizzo, [2] citta, [3] nazione
+    /// @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
     private void gestisciPosizioneRistorante(String[] pacchetto) throws IOException {
         // pacchetto conterrà: [0] comando, [1] indirizzo, [2] citta, [3] nazione
         String risp = GestoreDatabase.ricercaPosizioneRistorante(pacchetto[1], pacchetto[2], pacchetto[3]);
@@ -185,12 +208,17 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
+    ///Invia al client una lista contenente tutti i tipi di cucina presenti nel db
+    /// @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
     private void gestisciTipiCucina() throws IOException {
         List<String> ris=GestoreDatabase.ricercaTipiCucina(urlDB,userDB,passDB);
         output.writeObject(ris);
         output.flush();
     }
 
+    /**
+     * Chiude tutti gli stream e socket
+     */
     private void chiudiRisorse() {
         try {
             if (input != null) input.close();
@@ -202,6 +230,12 @@ public class serverSlave extends Thread {
         }
     }
 
+    /**
+     * Gestisce la richiesta di aggiunta recensione
+     * Invia l'esito al client
+     * @param recensione Recensione da aggiungere
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
+     */
     private void gestisciAggiungiRecensione(Recensione recensione) throws IOException {
         System.out.println("[SLAVE " + getId() + "] Nuova RECENSIONE per ristorante ID: " + recensione.getRistoranteId());
         String risposta = GestoreDatabase.aggiungiRecensione(recensione, urlDB, userDB, passDB);
@@ -209,6 +243,12 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
+    /**
+     * Gestisce la richiesta per ottenere tutte le recensioni di un ristorante,
+     * poi invia la lista al client.
+     * @param pacchetto String[] contente id ristorante
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
+     */
     private void gestisciGetRecensioni(String[] pacchetto) throws IOException {
         int idRistorante = Integer.parseInt(pacchetto[1]);
         List<Recensione> lista = GestoreDatabase.visualizzaRecensioni(idRistorante, urlDB, userDB, passDB);
@@ -216,6 +256,12 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
+    /**
+     * Gestisce la richiesta di aggiungere la risposta di aggiungere una risposta a una recensione
+     * Invia l'esito al client
+     * @param pacchetto String[] contenente id recensione a cui rispondere
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
+     */
     private void gestisciRispondiRecensione(String[] pacchetto) throws IOException {
         int idRecensione = Integer.parseInt(pacchetto[1]);
         String testoRisposta = pacchetto[2];
@@ -224,6 +270,12 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
+    /**
+     * Gestisce la richiesta di eliminare una recensione
+     * Invia l'esito al client
+     * @param pacchetto String[] contenente id recensione da eliminare
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
+     */
     private void gestisciEliminaRecensione(String[] pacchetto) throws IOException {
         int idRecensione = Integer.parseInt(pacchetto[1]);
         String autore = (pacchetto[2]);
@@ -232,6 +284,12 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
+    /**
+     * Gestisce la richiesta di ottenere il riepilogo di un ristorante
+     * Invia l'esito al client
+     * @param pacchetto String[] contenete id ristorante
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
+     */
     private void gestisciRiepilogo(String[] pacchetto) throws IOException {
         int idRistorante = Integer.parseInt(pacchetto[1]);
         String riepilogo = GestoreDatabase.visualizzaRiepilogo(idRistorante, urlDB, userDB, passDB);
@@ -239,6 +297,12 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
+    /**
+     * Gestisce la richiesta di ottenere le recensioni di un dato utente
+     * Invia la lista di esito al client
+     * @param pacchetto String[] contenente username dell'autore
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
+     */
     private void gestisciGetRecensioniUtente(String[] pacchetto) throws IOException {
         String autore = pacchetto[1];
         List<Recensione> lista = GestoreDatabase.visualizzaRecensioniUtente(autore, urlDB, userDB, passDB);
@@ -246,6 +310,12 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
+    /**
+     * Gestisce la richiesta di modificare una recensione
+     * Invia l'esito al client
+     * @param pacchetto String[]: [1] id recensione, [2] username autore, [3] n° stelle, [4] nuovo testo
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
+     */
     private void gestisciModificaRecensione(String[] pacchetto) throws IOException {
         int idRecensione = Integer.parseInt(pacchetto[1]);
         String autore = pacchetto[2];
@@ -257,6 +327,13 @@ public class serverSlave extends Thread {
     }
 
     // -- Metodi Gestione Preferiti --
+
+    /**
+     * Gestisce la richiesta di aggiungere un preferito
+     * Invia l'esito al client
+     * @param pacchetto String[] contenente username utente, id ristorante
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
+     */
     private void gestisciAggiungiPreferito(String[] pacchetto) throws IOException {
         String autore = pacchetto[1];
         int idRistorante = Integer.parseInt(pacchetto[2]);
@@ -265,6 +342,12 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
+    /**
+     * Gestisce la richiesta di rimuovere un preferito
+     * Invia l'esito al client
+     * @param pacchetto String[] contenente username utente, id ristorante
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
+     */
     private void gestisciRimuoviPreferito(String[] pacchetto) throws IOException{
         String autore = pacchetto[1];
         int idRistorante = Integer.parseInt(pacchetto[2]);
@@ -273,6 +356,12 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
+    /**
+     * Gestisce la richiesta di ottenere i preferiti di un utente
+     * Invia la lista dei preferiti al client
+     * @param pacchetto String[] contenente username utente
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
+     */
     private void gestisciGetPreferiti(String[] pacchetto) throws IOException {
         String username = pacchetto[1];
         List<Ristorante> lista = GestoreDatabase.visualizzaPreferiti(username, urlDB, userDB, passDB);
@@ -281,6 +370,13 @@ public class serverSlave extends Thread {
     }
 
     // -- Metodi Gestione Ristoratori --
+
+    /**
+     * Gestisce la richiesta di ottenere le informazioni di un utente
+     * Invia l'utente cercato al client
+     * @param pacchetto String[] contenente username
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
+     */
     private void gestisciGetUtente(String[] pacchetto) throws IOException{
         String username = pacchetto[1];
         Utente u = GestoreDatabase.ricercaUtente(username, urlDB, userDB, passDB);
@@ -288,12 +384,24 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
+    /**
+     * Gestisce la richiesta di aggiungere un ristorante
+     * Invia l'esito al client
+     * @param pacchetto Ristorante da aggiungere
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
+     */
     private void gestisciAggiungiRistorante(Ristorante pacchetto) throws IOException {
         String risposta=GestoreDatabase.aggiungiRistorante(pacchetto, urlDB, userDB, passDB);
         output.writeObject(risposta);
         output.flush();
     }
 
+    /**
+     * Gestisce la richiesta di ottenere tutti i ristoranti di un dato proprietario
+     * Invia la lista ottenuta al client
+     * @param pacchetto String[] contenente username proprietario
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
+     */
     private void gestisciRicercaProprietario(String[] pacchetto) throws IOException{
         String username = pacchetto[1];
         List<Ristorante> r= GestoreDatabase.ricercaProprietario(username, urlDB, userDB, passDB);
@@ -301,18 +409,36 @@ public class serverSlave extends Thread {
         output.flush();
     }
 
+    /**
+     * Gestisce la richiesta di eliminare un ristorante
+     * Invia l'esito al client
+     * @param pacchetto String[] contenente username proprietario, id ristorante
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
+     */
     private void gestisciEliminaRistorante(String[] pacchetto) throws IOException{
         Integer i = GestoreDatabase.eliminaRistorante(pacchetto[1], Long.parseLong(pacchetto[2]), urlDB, userDB, passDB);
         output.writeObject(i);
         output.flush();
     }
 
+    /**
+     * Gestisce la richiesta di ottenere le informazioni di un ristorante specifico
+     * Invia il ristorante al client
+     * @param pacchetto String[] contenente id ristorante
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
+     */
     private void gestisciRicercaId(String[] pacchetto) throws IOException{
         Ristorante i = GestoreDatabase.idRistorante(Long.parseLong(pacchetto[1]), urlDB, userDB, passDB);
         output.writeObject(i);
         output.flush();
     }
 
+    /**
+     * Gestisce la richiesta di ottenere media valutazioni e numero totale di recensioni di un dato ristorante
+     * Invia la risposta al client
+     * @param pacchetto String[] id ristorante
+     * @throws IOException se si verifica un errore durante la comunicazione con il client tramite il flusso di output.
+     */
     private void getInfoRistorante(String[] pacchetto) throws IOException {
         String risp=GestoreDatabase.getInfoRistorante(Integer.parseInt(pacchetto[1]),urlDB, userDB, passDB);
 

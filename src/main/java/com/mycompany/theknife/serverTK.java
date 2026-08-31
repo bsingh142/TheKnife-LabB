@@ -15,8 +15,8 @@ import java.sql.SQLException;
 import java.util.Scanner;
 
 /**
- *
- * @author Balkaran
+ * Punto di ingresso principale per il Server, instaura la connessione con il db,
+ * accetta le connessioni dei client e le delega a uno slave.
  */
 public class serverTK {
 

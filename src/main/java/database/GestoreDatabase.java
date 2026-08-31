@@ -26,8 +26,14 @@ import java.util.List;
  */
 public class GestoreDatabase {
 
+
     /**
-     * Esegue la query di inserimento. Ora restituisce una Stringa con l'esito preciso.
+     * Aggiorna il db aggiungendo un nuovo utente nella tabella utenti. Ora restituisce una Stringa con l'esito preciso.
+     * @param u Utente da inserire
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return Stringa di controllo
      */
     public static synchronized String registraUtente(Utente u, String urlDB, String userDB, String passDB) {
         String query = "INSERT INTO utenti (nome, cognome, username, pwd, dob, latitudine,longitudine, ruolo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -99,10 +105,18 @@ public class GestoreDatabase {
         }
     }
 
+    /// @param passwordInChiaro String password
+    /// @return stringa criptata
     private static String hashPassword(String passwordInChiaro) {
         return BCrypt.hashpw(passwordInChiaro, BCrypt.gensalt());
     }
 
+    /**
+     * Ottiene le coordinate corrispondente alla località inserita
+     * @param citta Stringa contenente la città
+     * @param nazione Stringa contenente la nazione
+     * @return Stringa contenente la posizione nel formato latitudine/longitudine
+     */
     public static String ricercaPosizione(String citta,String nazione){
         try {
             String url="https://nominatim.openstreetmap.org/search"
@@ -142,6 +156,13 @@ public class GestoreDatabase {
 
     }
 
+    /**
+     * Ottiene le coordinate corrispondente alla località inserita
+     * @param via Stringa contenente la via
+     * @param citta Stringa contenente la città
+     * @param nazione Stringa contenente la nazione
+     * @return Stringa contenente la posizione nel formato latitudine/longitudine
+     */
     public static String ricercaPosizioneRistorante(String via, String citta, String nazione) {
         try {
             // Usiamo i parametri strutturati di Nominatim per la massima precisione
@@ -178,6 +199,15 @@ public class GestoreDatabase {
         }
     }
 
+    /**
+     * Interroga il db secondo i parametri specificati nella richiesta
+     * @param richiesta Stringa contenente i parametri del filtro
+     * @param posUtente Stringa della posizione
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return una stringa contenente tutti i ristoranti filtrati
+     */
     public static List<Ristorante> ricercaRistoranti(String richiesta, String posUtente, String urlDB, String userDB, String passDB){
         List<Ristorante> risultati = new ArrayList<>();
         if(richiesta.equalsIgnoreCase("TUTTI")){
@@ -311,6 +341,13 @@ public class GestoreDatabase {
         return risultati;
     }
 
+    /**
+     * Interroga il db e ottiene tutti i tipi di cucina presenti
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return una lista contenente tutti i tipi di cucina
+     */
     public static List<String> ricercaTipiCucina(String urlDB, String userDB, String passDB){
         List<String> ris=new ArrayList<>();
         String query="""
@@ -338,6 +375,15 @@ public class GestoreDatabase {
     // METODI PREFERITI
     // ===================================================================================
 
+    /**
+     * Inserisce nel db una nuova tupla nella tabella preferiti
+     * @param user String username utente
+     * @param ristorante int id del ristorante
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return Stringa di esito
+     */
     public static synchronized String aggiungiPreferito(String user, int ristorante, String urlDB, String userDB, String passDB){
         String query = "INSERT INTO preferiti(username, ristorante_id)" + "VALUES(?, ?)";
         try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
@@ -357,6 +403,15 @@ public class GestoreDatabase {
         }
     }
 
+    /**
+     * Rimuove la tupla corrispondente dalla tabella preferiti
+     * @param user String username utente
+     * @param ristorante int id del ristorante
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return Stringa di esito
+     */
     public static synchronized String rimuoviPreferito(String user, int ristorante, String urlDB, String userDB, String passDB){
         String query = "DELETE FROM preferiti WHERE ristorante_id = ? AND username = ?";
         try (Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
@@ -375,6 +430,14 @@ public class GestoreDatabase {
 
     }
 
+    /**
+     * Cerca nel db tutti i ristoranti preferiti di un dato utente
+     * @param username String username utente
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return lista di ristoranti preferiti
+     */
     public static List<Ristorante> visualizzaPreferiti(String username, String urlDB, String userDB, String passDB) {
         List<Ristorante> lista = new ArrayList<>();
 
@@ -416,6 +479,14 @@ public class GestoreDatabase {
     // METODI RECENSIONI
     // ===================================================================================
 
+    /**
+     * Aggiunge una tupla nella tabella recensioni
+     * @param recensione
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return Stringa di controllo
+     */
     public static synchronized String aggiungiRecensione(Recensione recensione, String urlDB, String userDB, String passDB) {
         if (recensione.getStelle() < 1 || recensione.getStelle() > 5) {
             return "ERRORE: La valutazione deve essere compresa tra 1 e 5 stelle.";
@@ -441,6 +512,14 @@ public class GestoreDatabase {
         }
     }
 
+    /**
+     * Interroga il db e ottiene tutte le recensioni di un dato ristorante
+     * @param idRistorante int id del ristorante
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return lista contenente tutte le recensioni di un dato ristorante
+     */
     public static List<Recensione> visualizzaRecensioni(int idRistorante, String urlDB, String userDB, String passDB) {
         List<Recensione> listaRecensioni = new ArrayList<>();
 
@@ -479,6 +558,15 @@ public class GestoreDatabase {
         return listaRecensioni;
     }
 
+    /**
+     * Aggiorna una tupla nella tabella recensioni aggiungendo una risposta
+     * @param idRecensione int id recensione
+     * @param testoRisposta String testo risposta
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return Stringa di controllo
+     */
     public static synchronized String rispondiARecensione(int idRecensione, String testoRisposta, String urlDB, String userDB, String passDB) {
         if (testoRisposta == null || testoRisposta.trim().isEmpty()) {
             return "ERRORE: La risposta non può essere vuota.";
@@ -502,6 +590,15 @@ public class GestoreDatabase {
         }
     }
 
+    /**
+     * Rimuove una tupla dalla tabella recensioni
+     * @param idRecensione int id recensione
+     * @param autore Stringa username autore della recensione
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return Stringa di controllo
+     */
     public static synchronized String eliminaRecensione(int idRecensione, String autore, String urlDB, String userDB, String passDB) {
         String query = "DELETE FROM recensioni WHERE idrecensione = ? AND autore = ?";
 
@@ -521,6 +618,15 @@ public class GestoreDatabase {
         }
     }
 
+    /**
+     * Interroga il db e ottiene il valore medio e il numero di tutte le recensioni
+     * di un dato ristorante
+     * @param idRistorante Int id del ristorante
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return Stringa contente il riepilogo o messaggio di errore
+     */
     public static String visualizzaRiepilogo(int idRistorante, String urlDB, String userDB, String passDB) {
         String query = "SELECT " +
                 "COUNT(*) AS totale, " +
@@ -574,6 +680,14 @@ public class GestoreDatabase {
         return "ERRORE: Ristorante non trovato.";
     }
 
+    /**
+     * Interroga il db e ottiene tutte le recensioni scritte da un dato utente
+     * @param autore String username autore
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return lista contenente le recensioni
+     */
     public static List<Recensione> visualizzaRecensioniUtente(String autore, String urlDB, String userDB, String passDB) {
         List<Recensione> lista = new ArrayList<>();
 
@@ -606,6 +720,17 @@ public class GestoreDatabase {
         return lista;
     }
 
+    /**
+     * Aggiorna il db e sovrascrive una recensione già esistente
+     * @param idRecensione int id della recensione
+     * @param autore String username autore
+     * @param stelle int numero di stelle
+     * @param testo String nuovo testo per la recensione
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return Stringa di controllo
+     */
     public static synchronized String modificaRecensione(int idRecensione, String autore, int stelle, String testo, String urlDB, String userDB, String passDB) {
         if (stelle < 1 || stelle > 5) {
             return "ERRORE: La valutazione deve essere compresa tra 1 e 5 stelle.";
@@ -638,6 +763,14 @@ public class GestoreDatabase {
     // METODI RISTORATORI
     // ===================================================================================
 
+    /**
+     * Aggiorna il db inserendo una nuova tupla nella tabella ristorantitheknife
+     * @param r Ristorante da aggiungere
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return Stringa di controllo
+     */
     public static synchronized String aggiungiRistorante(Ristorante r, String urlDB, String userDB, String passDB) {
         String query = "INSERT INTO ristorantitheknife (nome, indirizzo, citta, nazione, latitudine, longitudine, fascia_prezzo, delivery, prenotazione_online, tipo_cucina, proprietario) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -669,6 +802,14 @@ public class GestoreDatabase {
         }
     }
 
+    /**
+     * Interroga il db e ottiene tutte le informazioni di un dato utente
+     * @param user String username
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return Utente oggetto con tutte le informazioni dell'utente
+     */
     public static Utente ricercaUtente(String user, String urlDB, String userDB, String passDB){
         String query = "SELECT * FROM utenti WHERE username = ?";
         Utente u=null;
@@ -695,6 +836,14 @@ public class GestoreDatabase {
         return u;
     }
 
+    /**
+     * Interroga il db e ottiene tutti i ristoranti di un dato proprietario
+     * @param proprietario String username del proprietario
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return Lista contenente tutti i ristoranti trovati
+     */
     public static List<Ristorante> ricercaProprietario(String proprietario, String urlDB, String userDB, String passDB){
         List<Ristorante> risultati = new ArrayList<>();
 
@@ -729,6 +878,15 @@ public class GestoreDatabase {
         return risultati;
     }
 
+    /**
+     * Aggiorna il db eliminando la tupla corrispondente dalla tabella ristorantitheknife
+     * @param proprietario String username proprietario
+     * @param id long id del ristorante
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return int di controllo
+     */
     public static synchronized int eliminaRistorante(String proprietario, long id, String urlDB, String userDB, String passDB){
 
         String query = "DELETE FROM ristorantitheknife WHERE id=? AND proprietario=?";
@@ -748,6 +906,14 @@ public class GestoreDatabase {
 
     }
 
+    /**
+     * Interroga il db e ottiene tutte le informazioni di un ristorante con uno specifico id
+     * @param id long id del ristorante
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return Ristorante trovato
+     */
     public static Ristorante idRistorante(long id, String urlDB, String userDB, String passDB){
         String query="SELECT * FROM ristorantitheknife WHERE id = ?";
 
@@ -780,6 +946,14 @@ public class GestoreDatabase {
         return null;
     }
 
+    /**
+     * Interroga il db per ottenere il numero totale di recensioni e la media delle valutazioni
+     * @param idR int id del ristorante
+     * @param urlDB String URL del db
+     * @param userDB String username del db
+     * @param passDB String password del db
+     * @return Stringa contenente il risultato
+     */
     public static String getInfoRistorante(int idR,String urlDB, String userDB, String passDB){
         String ris="";
         String query= """

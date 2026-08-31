@@ -243,7 +243,10 @@ public class dialogFiltri extends JDialog {
         }
     }
 
-    /// @return Lista di ristoranti ottenuta
+    /**
+     * Metodo get per la lista di ristoranti filtrati
+     * @return Lista di ristoranti ottenuta
+     */
     public List<Ristorante> getRistorantiFiltrati() {
         return ristorantiFiltrati;
     }
