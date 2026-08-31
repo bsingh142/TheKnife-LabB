@@ -1,0 +1,1 @@
+Leggere il manuale utente per la corretta installazione e esecuzione
